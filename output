@@ -1,67 +1,17 @@
 ```json
 {
-  "query_original": "porównaj jakość powietrza płocka, warszawy, krakowa i gdanska",
-  "status": "success",
+  "query_original": "średnai wieku na poszczegulnych osiedlach w Płocku",
+  "status": "not_found",
+  "message": "Główny Urząd Statystyczny (GUS) nie publikuje regularnych danych demograficznych, takich jak średni wiek, na poziomie osiedli miejskich w Banku Danych Lokalnych (BDL). Dane o tak dużej szczegółowości są zazwyczaj zbierane w ramach Narodowych Spisów Powszechnych, ale ich publiczne udostępnianie w takim przekroju jest ograniczone. Najniższy standardowo dostępny poziom agregacji dla tego typu danych to gmina.",
   "data_meta": {
-    "title": "Średnie roczne stężenie pyłów zawieszonych PM10 i PM2.5 w wybranych miastach w 2023 r.",
-    "chart_type_suggestion": "słupkowy",
-    "source_info": "GUS, Bank Danych Lokalnych",
-    "latest_period": "2023",
-    "unit": "µg/m³",
-    "y_axis_label": "Średnie roczne stężenie [µg/m³]",
-    "x_axis_label": "Miasto"
+    "title": "Brak danych o średnim wieku dla osiedli w Płocku",
+    "chart_type_suggestion": "tabela",
+    "source_info": "GUS, Bank Danych Lokalnych (BDL)",
+    "latest_period": "N/A",
+    "unit": "lata",
+    "y_axis_label": "Średni wiek (lata)",
+    "x_axis_label": "Osiedle"
   },
-  "data_series": [
-    {
-      "series_name": "Pył zawieszony PM10",
-      "data_points": [
-        {
-          "category": "Płock",
-          "value": 23,
-          "tooltip_info": "Średnie roczne stężenie pyłu PM10 w 2023 r."
-        },
-        {
-          "category": "Warszawa",
-          "value": 22,
-          "tooltip_info": "Średnie roczne stężenie pyłu PM10 w 2023 r."
-        },
-        {
-          "category": "Kraków",
-          "value": 27,
-          "tooltip_info": "Średnie roczne stężenie pyłu PM10 w 2023 r."
-        },
-        {
-          "category": "Gdańsk",
-          "value": 17,
-          "tooltip_info": "Średnie roczne stężenie pyłu PM10 w 2023 r."
-        }
-      ]
-    },
-    {
-      "series_name": "Pył zawieszony PM2.5",
-      "data_points": [
-        {
-          "category": "Płock",
-          "value": 16,
-          "tooltip_info": "Średnie roczne stężenie pyłu PM2.5 w 2023 r."
-        },
-        {
-          "category": "Warszawa",
-          "value": 15,
-          "tooltip_info": "Średnie roczne stężenie pyłu PM2.5 w 2023 r."
-        },
-        {
-          "category": "Kraków",
-          "value": 19,
-          "tooltip_info": "Średnie roczne stężenie pyłu PM2.5 w 2023 r."
-        },
-        {
-          "category": "Gdańsk",
-          "value": 11,
-          "tooltip_info": "Średnie roczne stężenie pyłu PM2.5 w 2023 r."
-        }
-      ]
-    }
-  ]
+  "data_series": []
 }
 ```

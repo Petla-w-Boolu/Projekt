@@ -41,4 +41,4 @@ Twoim **głównym zadaniem jest przekształcenie zapytania użytkownika w ustruk
 
 Zacznij generowanie JSON natychmiast po otrzymaniu zapytania, wypełniając pola na podstawie poniższego tekstu:
 
-Zapytanie Użytkownika: "porównaj jakość powietrza płocka, warszawy, krakowa i gdanska"
+Zapytanie Użytkownika: "średnai wieku na poszczegulnych osiedlach w Płocku"
