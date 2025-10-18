@@ -1,0 +1,474 @@
+{% extends "base_subpage.html" %}
+
+{% block title %}Porównywarka Miast | eStatysta Płock{% endblock %}
+
+{% set page_id = 'porownywarka' %}
+
+{% block content_block %}
+    <!-- Wewnętrzny styl dla zaawansowanej porównywarki -->
+    <style>
+        .compare-header {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            color: #1a73e8;
+            border-left: 5px solid #1a73e8;
+        }
+        .compare-grid {
+            display: grid;
+            grid-template-columns: 1fr 3fr;
+            gap: 20px;
+        }
+        .sidebar {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .sidebar h3 {
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            color: #333;
+        }
+        .select-group {
+            margin-bottom: 15px;
+        }
+        .select-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        .select-group select, .select-group input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .city-checkbox-list {
+            max-height: 250px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: #fafafa;
+        }
+        .city-checkbox-list label {
+            display: block;
+            font-weight: normal;
+            margin-bottom: 5px;
+            cursor: pointer;
+        }
+        .chart-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .chart-area h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        /* Usunięcie stylów przycisku, ponieważ go usuwamy */
+        /* .generate-button { ... } */
+        /* .generate-button:hover { ... } */
+        
+        /* Responsywność */
+        @media (max-width: 900px) {
+            .compare-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        /* Style dla opcji Radar/Multiple Indicators */
+        #multi-indicator-options {
+            display: none; /* Domyślnie ukryte */
+            padding-top: 10px;
+            border-top: 1px dashed #ddd;
+        }
+        #multi-indicator-options label {
+            font-weight: normal !important;
+        }
+    </style>
+
+    <h2 class="page-header-title">📊 Porównywarka Miast (Benchmarking)</h2>
+
+    <div class="compare-header">
+        <strong>Instrukcja:</strong> Wybierz wskaźnik(i) do analizy i zaznacz miasta, które chcesz porównać. Wykres zaktualizuje się automatycznie.
+    </div>
+
+    <div class="compare-grid">
+        <!-- Panel Kontrolny / Filtry -->
+        <div class="sidebar">
+            <h3>Kryteria Porównania</h3>
+            
+            <!-- Wybór Typu Wykresu -->
+            <div class="select-group">
+                <label for="chart-type-select">Typ Wizualizacji:</label>
+                <select id="chart-type-select" onchange="updateIndicatorPanel(); generateComparisonChart()" style="font-weight: bold;">
+                    <option value="bar" selected>Pojedynczy Wskaźnik (Słupkowy)</option>
+                    <option value="radar">Wiele Wskaźników (Radarowy)</option>
+                </select>
+            </div>
+
+            <!-- Wybór Wskaźnika Pojedynczego (Domyślny) -->
+            <div class="select-group" id="single-indicator-options">
+                <label for="indicator-select">Wskaźnik Główny:</label>
+                <select id="indicator-select" onchange="generateComparisonChart()" style="font-weight: bold;">
+                    <option value="population" selected>Liczba Mieszkańców (tys.)</option>
+                    <option value="aqi">Jakość Powietrza (Średnie AQI)</option>
+                    <option value="income">Średnie Wynagrodzenie (PLN)</option>
+                    <option value="unemployment">Stopa Bezrobocia (%)</option>
+                    <option value="green_area">Tereny Zielone (m²/osobę)</option>
+                    <option value="schools_per_capita">Placówki Edukacyjne (na 10 tys. mieszk.)</option>
+                </select>
+            </div>
+            
+            <!-- Wybór Wielu Wskaźników (Radar) -->
+            <div class="select-group" id="multi-indicator-options">
+                <label>Wybierz Wskaźniki do Radaru (Min. 3):</label>
+                <div class="city-checkbox-list" style="max-height: 150px;">
+                    <label><input type="checkbox" name="multi_indicator" value="aqi" onchange="generateComparisonChart()"> Jakość Powietrza</label>
+                    <label><input type="checkbox" name="multi_indicator" value="income" onchange="generateComparisonChart()" checked> Średnie Wynagrodzenie</label>
+                    <label><input type="checkbox" name="multi_indicator" value="unemployment" onchange="generateComparisonChart()" checked> Stopa Bezrobocia</label>
+                    <label><input type="checkbox" name="multi_indicator" value="green_area" onchange="generateComparisonChart()" checked> Tereny Zielone</label>
+                    <label><input type="checkbox" name="multi_indicator" value="schools_per_capita" onchange="generateComparisonChart()"> Edukacja</label>
+                    <label><input type="checkbox" name="multi_indicator" value="population" onchange="generateComparisonChart()"> Populacja</label>
+                </div>
+            </div>
+
+            <!-- Dodatkowe Opcje Filtrowania (Obecnie używane tylko w BAR) -->
+            <div class="select-group">
+                <label for="year-select">Rok Danych:</label>
+                <select id="year-select" onchange="generateComparisonChart()">
+                    <option value="2024" selected>2024</option>
+                    <option value="2023">2023</option>
+                    <option value="2022">2022</option>
+                </select>
+            </div>
+
+            <div class="select-group">
+                <label for="min-pop-input">Minimalna Populacja (tys.):</label>
+                <input type="number" id="min-pop-input" value="50" min="0" onchange="generateComparisonChart()">
+            </div>
+
+            <!-- Wybór Miast -->
+            <h3>Wybór Miast do Analizy</h3>
+            <div class="city-checkbox-list">
+                <!-- Dodano onchange="generateComparisonChart()" do każdego checkboxa -->
+                <label><input type="checkbox" name="city" value="Płock" checked onchange="generateComparisonChart()"> Płock</label>
+                <label><input type="checkbox" name="city" value="Warszawa" onchange="generateComparisonChart()"> Warszawa</label>
+                <label><input type="checkbox" name="city" value="Kraków" onchange="generateComparisonChart()"> Kraków</label>
+                <label><input type="checkbox" name="city" value="Łódź" onchange="generateComparisonChart()"> Łódź</label>
+                <label><input type="checkbox" name="city" value="Gdańsk" onchange="generateComparisonChart()"> Gdańsk</label>
+                <label><input type="checkbox" name="city" value="Wrocław" onchange="generateComparisonChart()"> Wrocław</label>
+                <label><input type="checkbox" name="city" value="Poznań" onchange="generateComparisonChart()"> Poznań</label>
+                <label><input type="checkbox" name="city" value="Bydgoszcz" onchange="generateComparisonChart()"> Bydgoszcz</label>
+                <label><input type="checkbox" name="city" value="Toruń" onchange="generateComparisonChart()"> Toruń</label>
+                <label><input type="checkbox" name="city" value="Radom" onchange="generateComparisonChart()"> Radom</label>
+                <label><input type="checkbox" name="city" value="Lublin" onchange="generateComparisonChart()"> Lublin</label>
+                <label><input type="checkbox" name="city" value="Szczecin" onchange="generateComparisonChart()"> Szczecin</label>
+                <label><input type="checkbox" name="city" value="Katowice" onchange="generateComparisonChart()"> Katowice</label>
+                <label><input type="checkbox" name="city" value="Białystok" onchange="generateComparisonChart()"> Białystok</label>
+                <label><input type="checkbox" name="city" value="Rzeszów" onchange="generateComparisonChart()"> Rzeszów</label>
+            </div>
+            
+            
+        </div>
+
+        <!-- Obszar Wykresu -->
+        <div class="chart-area">
+            <h3 id="chart-title">Wykres Porównawczy Miast (Liczba Mieszkańców)</h3>
+            <canvas id="comparisonChart" style="max-height: 500px;"></canvas>
+            <div id="chart-message" style="text-align: center; margin-top: 20px; color: #888;">
+                Wybierz kryteria i miasta, aby wygenerować pierwszy wykres.
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGIKA JAVASCRIPT I CHART.JS -->
+    <script>
+        // Dane symulacyjne dla porównywarki
+        const MOCK_DATA = {
+            'Płock': { population: 118, aqi: 45, income: 6500, unemployment: 5.2, green_area: 131, schools_per_capita: 4.8 },
+            'Warszawa': { population: 1800, aqi: 60, income: 9100, unemployment: 1.8, green_area: 85, schools_per_capita: 3.5 },
+            'Kraków': { population: 800, aqi: 75, income: 7800, unemployment: 2.5, green_area: 70, schools_per_capita: 4.0 },
+            'Łódź': { population: 670, aqi: 55, income: 6900, unemployment: 4.1, green_area: 95, schools_per_capita: 4.2 },
+            'Gdańsk': { population: 470, aqi: 40, income: 7500, unemployment: 3.3, green_area: 105, schools_per_capita: 3.8 },
+            'Wrocław': { population: 680, aqi: 65, income: 8100, unemployment: 2.2, green_area: 80, schools_per_capita: 3.9 },
+            'Poznań': { population: 550, aqi: 50, income: 7200, unemployment: 2.8, green_area: 90, schools_per_capita: 4.1 },
+            'Bydgoszcz': { population: 350, aqi: 48, income: 6200, unemployment: 4.5, green_area: 110, schools_per_capita: 4.7 },
+            'Toruń': { population: 200, aqi: 42, income: 6300, unemployment: 3.9, green_area: 120, schools_per_capita: 5.0 },
+            'Radom': { population: 210, aqi: 58, income: 5500, unemployment: 8.5, green_area: 100, schools_per_capita: 4.3 },
+            'Lublin': { population: 340, aqi: 52, income: 6400, unemployment: 5.0, green_area: 115, schools_per_capita: 4.5 },
+            'Szczecin': { population: 400, aqi: 44, income: 6700, unemployment: 3.5, green_area: 125, schools_per_capita: 4.6 },
+            'Katowice': { population: 300, aqi: 70, income: 7000, unemployment: 3.0, green_area: 65, schools_per_capita: 3.7 },
+            'Białystok': { population: 290, aqi: 40, income: 5900, unemployment: 5.8, green_area: 140, schools_per_capita: 5.1 },
+            'Rzeszów': { population: 190, aqi: 45, income: 6100, unemployment: 4.0, green_area: 100, schools_per_capita: 4.9 },
+        };
+        
+        let comparisonChartInstance = null;
+        
+        // Mapowanie wartości opcji do pełnych nazw wskaźników (dla wykresu Bar)
+        const INDICATOR_LABELS = {
+            'population': 'Liczba Mieszkańców (tys.)',
+            'aqi': 'Jakość Powietrza (Średnie AQI)',
+            'income': 'Średnie Wynagrodzenie (PLN)',
+            'unemployment': 'Stopa Bezrobocia (%)',
+            'green_area': 'Tereny Zielone (m²/osobę)',
+            'schools_per_capita': 'Placówki Edukacyjne (na 10 tys. mieszk.)'
+        };
+
+        // Funkcja generująca losowy kolor
+        function generateRandomColor(opacity = 0.5) {
+            const r = Math.floor(Math.random() * 255);
+            const g = Math.floor(Math.random() * 255);
+            const b = Math.floor(Math.random() * 255);
+            return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+        }
+        
+        // Wartości idealne dla normalizacji (symulacja), zakładamy: 
+        // Wskaźniki, gdzie WYŻSZA wartość jest LEPSZA (im wyższa populacja/dochód/zieleń, tym lepiej):
+        const HIGHER_IS_BETTER = ['population', 'income', 'green_area', 'schools_per_capita'];
+        // Wskaźniki, gdzie NIŻSZA wartość jest LEPSZA (im niższy AQI/bezrobocie, tym lepiej):
+        const LOWER_IS_BETTER = ['aqi', 'unemployment'];
+
+
+        /**
+         * Normalizuje dane do skali 0-100 na podstawie ekstremalnych wartości 
+         * w aktualnie przefiltrowanym zbiorze miast.
+         * @param {string} indicator - Klucz wskaźnika (np. 'income')
+         * @param {number} value - Wartość do normalizacji
+         * @param {Array<number>} allValues - Wszystkie wartości dla tego wskaźnika w aktualnej selekcji
+         * @returns {number} Znormalizowana wartość (0-100)
+         */
+        function normalizeValue(indicator, value, allValues) {
+            const maxVal = Math.max(...allValues);
+            const minVal = Math.min(...allValues);
+            const range = maxVal - minVal;
+
+            if (range === 0) return 50; // Wszystkie są równe
+
+            if (HIGHER_IS_BETTER.includes(indicator)) {
+                return ((value - minVal) / range) * 100;
+            } else if (LOWER_IS_BETTER.includes(indicator)) {
+                // Dla AQI/Bezrobocia (niższa wartość = lepsza)
+                return 100 - (((value - minVal) / range) * 100);
+            }
+            return value; // Jeśli nieznany, zwróć surową wartość
+        }
+
+        // Funkcja ukrywająca/pokazująca panel wskaźników
+        function updateIndicatorPanel() {
+            const chartType = document.getElementById('chart-type-select').value;
+            const single = document.getElementById('single-indicator-options');
+            const multi = document.getElementById('multi-indicator-options');
+
+            if (chartType === 'radar') {
+                single.style.display = 'none';
+                multi.style.display = 'block';
+            } else {
+                single.style.display = 'block';
+                multi.style.display = 'none';
+            }
+        }
+
+        // Główna funkcja generująca wykres porównawczy
+        function generateComparisonChart() {
+            const chartType = document.getElementById('chart-type-select').value;
+            const minPop = parseFloat(document.getElementById('min-pop-input').value) || 0;
+            const selectedCities = Array.from(document.querySelectorAll('input[name="city"]:checked'))
+                .map(cb => cb.value);
+
+            const chartMessage = document.getElementById('chart-message');
+            chartMessage.style.display = 'none';
+
+            if (selectedCities.length === 0) {
+                chartMessage.innerText = 'Wybierz co najmniej jedno miasto do porównania.';
+                chartMessage.style.display = 'block';
+                if (comparisonChartInstance) comparisonChartInstance.destroy();
+                return;
+            }
+
+            // Filtrowanie miast wg minimalnej populacji
+            const filteredCities = selectedCities.filter(city => MOCK_DATA[city].population * 1000 >= minPop * 1000);
+
+            if (filteredCities.length === 0) {
+                 chartMessage.innerText = 'Żadne z wybranych miast nie spełnia kryterium minimalnej populacji.';
+                 chartMessage.style.display = 'block';
+                 if (comparisonChartInstance) comparisonChartInstance.destroy();
+                 return;
+            }
+            
+            if (comparisonChartInstance) {
+                comparisonChartInstance.destroy();
+            }
+
+            const ctx = document.getElementById('comparisonChart').getContext('2d');
+            
+            if (chartType === 'bar') {
+                renderBarChart(ctx, filteredCities);
+            } else if (chartType === 'radar') {
+                renderRadarChart(ctx, filteredCities);
+            }
+        }
+        
+        function renderBarChart(ctx, filteredCities) {
+            const indicator = document.getElementById('indicator-select').value;
+            
+            // 1. Zbieranie danych
+            const labels = []; // Nazwy miast
+            const data = [];   // Wartości wskaźnika
+            const colors = []; // Kolory dla słupków
+            
+            filteredCities.forEach(city => {
+                labels.push(city);
+                data.push(MOCK_DATA[city][indicator]);
+                colors.push(city === 'Płock' ? '#1a73e8' : generateRandomColor(0.8)); 
+            });
+
+            // 2. Aktualizacja tytułu
+            document.getElementById('chart-title').innerText = `Porównanie Miast: ${INDICATOR_LABELS[indicator]}`;
+            
+            // 3. Konfiguracja i rysowanie wykresu słupkowego
+            comparisonChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: INDICATOR_LABELS[indicator],
+                        data: data,
+                        backgroundColor: colors,
+                        borderColor: colors.map(c => c.replace('0.8', '1')), 
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: INDICATOR_LABELS[indicator].split('(').pop().replace(')', '').trim() // Jednostka
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y.toLocaleString();
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderRadarChart(ctx, filteredCities) {
+            const selectedIndicators = Array.from(document.querySelectorAll('input[name="multi_indicator"]:checked'))
+                .map(cb => cb.value);
+            
+            if (selectedIndicators.length < 3) {
+                document.getElementById('chart-title').innerText = `Wykres Radarowy Wymaga Min. 3 Wskaźników`;
+                document.getElementById('chart-message').innerText = 'Wybierz co najmniej 3 wskaźniki, aby stworzyć profil miasta na wykresie radarowym.';
+                document.getElementById('chart-message').style.display = 'block';
+                return;
+            }
+
+            // 1. Zbieranie i normalizacja danych
+            const datasets = [];
+            const radarLabels = selectedIndicators.map(key => INDICATOR_LABELS[key].split('(')[0].trim());
+
+            // 1.1. Obliczanie zakresów dla normalizacji
+            const allIndicatorValues = {};
+            selectedIndicators.forEach(key => {
+                allIndicatorValues[key] = filteredCities.map(city => MOCK_DATA[city][key]);
+            });
+
+            // 1.2. Tworzenie datasetów (jeden dataset = jedno miasto)
+            filteredCities.forEach(city => {
+                const color = city === 'Płock' ? 'rgba(26, 115, 232, 0.7)' : generateRandomColor(0.7);
+                const cityDataNormalized = selectedIndicators.map(key => {
+                    return normalizeValue(key, MOCK_DATA[city][key], allIndicatorValues[key]);
+                });
+
+                datasets.push({
+                    label: city,
+                    data: cityDataNormalized,
+                    backgroundColor: color.replace('0.7', '0.2'),
+                    borderColor: color.replace('0.7', '1'),
+                    pointBackgroundColor: color.replace('0.7', '1'),
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: color.replace('0.7', '1'),
+                    borderWidth: 2
+                });
+            });
+
+            // 2. Aktualizacja tytułu
+            document.getElementById('chart-title').innerText = `Wykres Radarowy: Profil Miast (${radarLabels.join(', ')})`;
+
+            // 3. Konfiguracja i rysowanie wykresu radarowego
+            comparisonChartInstance = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: radarLabels,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    elements: {
+                        line: { borderWidth: 3 }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: { display: false },
+                            suggestedMin: 0,
+                            suggestedMax: 100,
+                            ticks: {
+                                display: false,
+                                maxTicksLimit: 5
+                            },
+                            pointLabels: {
+                                font: { size: 12, weight: 'bold' }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.parsed.r.toFixed(1)}/100`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Inicjalizacja: Uruchomienie domyślnego porównania po załadowaniu
+        document.addEventListener('DOMContentLoaded', () => {
+             updateIndicatorPanel(); // Ustawienie domyślnego panelu
+             generateComparisonChart();
+        });
+    </script>
+{% endblock %}

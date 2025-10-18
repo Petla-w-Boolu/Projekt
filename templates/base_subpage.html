@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>eStatysta Płock | Dane Statystyczne GUS</title>
+    <title>{% block title %}eStatysta Płock | GUS{% endblock %}</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
@@ -16,65 +16,35 @@
         <div class="logo">
             <a href="{{ url_for('index') }}">eStatysta Płock</a>
         </div>
-        </header>
-
-    <div class="main-layout">
-        
-        <main class="content" role="main">
-            
-            <section id="search-section" aria-labelledby="search-heading">
-                <h2 id="search-heading" class="search-title">Czego chcesz się dowiedzieć o swoim mieście?</h2>
-                <form role="search" action="#" method="GET" class="main-search-form">
-                    <label for="search-input" class="sr-only">Wyszukaj dane statystyczne</label>
-                    <input type="search" id="search-input" 
-                           placeholder="Wpisz np.: bezrobocie, edukacja, budżet..." name="q">
-                    <button type="submit" title="Wyszukaj"><i class="fas fa-search"></i></button>
-                </form>
-            </section>
-            
-            <section id="chart-area" aria-label="Główny obszar wykresów">
-                <h3 class="section-title">Ostatnie i Najpopularniejsze Dane:</h3>
-                {% if initial_data %}
-                    <div class="data-preview">
-                        <h4>Ludność Płocka (Przykładowe dane):</h4>
-                        <p>Labels: {{ initial_data.labels | join(', ') }}</p>
-                        <p>Values: {{ initial_data.values | join(', ') }}</p>
-                    </div>
-                {% else %}
-                    <p class="placeholder-text">Wybierz kategorię z bocznego menu lub użyj wyszukiwarki.</p>
-                {% endif %}
-            </section>
-
-        </main>
-    </div>
+    </header>
 
     <nav class="icon-nav" role="navigation" aria-label="Główne menu nawigacyjne">
         <ul>
-            <li class="nav-item active" data-name="Strona Główna">
+            <li class="nav-item {% if page_id == 'index' %}active{% endif %}" data-name="Strona Główna">
                 <a href="{{ url_for('index') }}" title="Strona Główna">
                     <i class="fas fa-home"></i>
                     <span class="nav-name">Strona Główna</span>
                 </a>
             </li>
-            <li class="nav-item" data-name="Ludność i Demografia">
+            <li class="nav-item {% if page_id == 'ludnosc' %}active{% endif %}" data-name="Ludność i Demografia">
                 <a href="/data/ludnosc" title="Ludność i Demografia">
                     <i class="fas fa-user-friends"></i>
                     <span class="nav-name">Ludność i Demografia</span>
                 </a>
             </li>
-            <li class="nav-item" data-name="Gospodarka i Finanse">
+            <li class="nav-item {% if page_id == 'gospodarka' %}active{% endif %}" data-name="Gospodarka i Finanse">
                 <a href="/data/gospodarka" title="Gospodarka i Finanse">
                     <i class="fas fa-chart-line"></i>
                     <span class="nav-name">Gospodarka i Finanse</span>
                 </a>
             </li>
-            <li class="nav-item" data-name="Edukacja i Kultura">
+            <li class="nav-item {% if page_id == 'edukacja' %}active{% endif %}" data-name="Edukacja i Kultura">
                 <a href="/data/edukacja" title="Edukacja i Kultura">
                     <i class="fas fa-graduation-cap"></i>
                     <span class="nav-name">Edukacja i Kultura</span>
                 </a>
             </li>
-            <li class="nav-item" data-name="Środowisko">
+            <li class="nav-item {% if page_id == 'srodowisko' %}active{% endif %}" data-name="Środowisko">
                 <a href="/data/srodowisko" title="Środowisko">
                     <i class="fas fa-tree"></i>
                     <span class="nav-name">Środowisko</span>
@@ -83,13 +53,13 @@
             <li class="nav-item separator">
                 <hr>
             </li>
-            <li class="nav-item" data-name="Porównania Miast">
+            <li class="nav-item {% if page_id == 'porownania_miast' %}active{% endif %}" data-name="Porównania Miast">
                 <a href="/porownania/miasta" title="Porównania Miast">
                     <i class="fas fa-city"></i>
                     <span class="nav-name">Porównania Miast</span>
                 </a>
             </li>
-            <li class="nav-item" data-name="Kontakt">
+            <li class="nav-item {% if page_id == 'kontakt' %}active{% endif %}" data-name="Kontakt">
                 <a href="/kontakt" title="Kontakt">
                     <i class="fas fa-envelope"></i>
                     <span class="nav-name">Kontakt</span>
@@ -97,14 +67,23 @@
             </li>
         </ul>
     </nav>
+    
+    <div class="main-layout">
+        
+        <main class="content" role="main">
+            {% block content_block %}
+            {% endblock %}
+        </main>
+    </div>
 
-    <footer role="contentinfo" style="text-align: center; padding: 10px; font-size: 0.8em; color: #666; border-top: 1px solid #ccc;">
+    <footer role="contentinfo" style="text-align: center; padding: 10px; font-size: 0.8em; color: #666; border-top: 1px solid #eeeeee;">
         &copy; 2025 eStatysta Płock. Dane statystyczne pochodzą z Banku Danych Lokalnych GUS.
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Tutaj będzie kod JS do ładowania danych
-        console.log("Strona załadowana. Gotowa do pobrania danych API.");
+        console.log("Strona załadowana. Gotowa do renderowania wykresów.");
+        // Tutaj można dodać wspólną logikę JS dla ładowania danych
     </script>
 </body>
 </html>
