@@ -74,7 +74,10 @@ def kontakt():
     # Renderuje kontakt.html
     return render_template('kontakt.html', page_id='kontakt')
 
-
+@app.route('/testowanie')
+def testowanie():
+    return render_template('base_subpage.html')
+    
 if __name__ == '__main__':
     # Uruchomienie aplikacji w trybie debugowania
     # Zostanie uruchomiona na http://127.0.0.1:5000/

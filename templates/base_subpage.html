@@ -1,89 +1,177 @@
 <!DOCTYPE html>
+
 <html lang="pl">
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>{% block title %}eStatysta Płock | GUS{% endblock %}</title>
-    
+
+   
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    
+
+   
+
     <meta name="description" content="Dashboard wizualizujący dane statystyczne GUS dla Płocka i regionu.">
+
 </head>
+
 <body>
 
+
+
     <header class="header" role="banner">
+
         <div class="logo">
+
             <a href="{{ url_for('index') }}">eStatysta Płock</a>
+
         </div>
+
     </header>
 
+
+
     <nav class="icon-nav" role="navigation" aria-label="Główne menu nawigacyjne">
+
         <ul>
+
             <li class="nav-item {% if page_id == 'index' %}active{% endif %}" data-name="Strona Główna">
+
                 <a href="{{ url_for('index') }}" title="Strona Główna">
+
                     <i class="fas fa-home"></i>
+
                     <span class="nav-name">Strona Główna</span>
+
                 </a>
+
             </li>
+
             <li class="nav-item {% if page_id == 'ludnosc' %}active{% endif %}" data-name="Ludność i Demografia">
+
                 <a href="/data/ludnosc" title="Ludność i Demografia">
+
                     <i class="fas fa-user-friends"></i>
+
                     <span class="nav-name">Ludność i Demografia</span>
+
                 </a>
+
             </li>
+
             <li class="nav-item {% if page_id == 'gospodarka' %}active{% endif %}" data-name="Gospodarka i Finanse">
+
                 <a href="/data/gospodarka" title="Gospodarka i Finanse">
+
                     <i class="fas fa-chart-line"></i>
+
                     <span class="nav-name">Gospodarka i Finanse</span>
+
                 </a>
+
             </li>
+
             <li class="nav-item {% if page_id == 'edukacja' %}active{% endif %}" data-name="Edukacja i Kultura">
+
                 <a href="/data/edukacja" title="Edukacja i Kultura">
+
                     <i class="fas fa-graduation-cap"></i>
+
                     <span class="nav-name">Edukacja i Kultura</span>
+
                 </a>
+
             </li>
+
             <li class="nav-item {% if page_id == 'srodowisko' %}active{% endif %}" data-name="Środowisko">
+
                 <a href="/data/srodowisko" title="Środowisko">
+
                     <i class="fas fa-tree"></i>
+
                     <span class="nav-name">Środowisko</span>
+
                 </a>
+
             </li>
+
             <li class="nav-item separator">
+
                 <hr>
+
             </li>
+
             <li class="nav-item {% if page_id == 'porownania_miast' %}active{% endif %}" data-name="Porównania Miast">
+
                 <a href="/porownania/miasta" title="Porównania Miast">
+
                     <i class="fas fa-city"></i>
+
                     <span class="nav-name">Porównania Miast</span>
+
                 </a>
+
             </li>
+
             <li class="nav-item {% if page_id == 'kontakt' %}active{% endif %}" data-name="Kontakt">
+
                 <a href="/kontakt" title="Kontakt">
+
                     <i class="fas fa-envelope"></i>
+
                     <span class="nav-name">Kontakt</span>
+
                 </a>
+
             </li>
+
         </ul>
+
     </nav>
-    
+
+   
+
     <div class="main-layout">
-        
+
+       
+
         <main class="content" role="main">
+
             {% block content_block %}
+
             {% endblock %}
+
         </main>
+
     </div>
 
+
+
     <footer role="contentinfo" style="text-align: center; padding: 10px; font-size: 0.8em; color: #666; border-top: 1px solid #eeeeee;">
+
         &copy; 2025 eStatysta Płock. Dane statystyczne pochodzą z Banku Danych Lokalnych GUS.
+
     </footer>
 
+
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script>
+
         console.log("Strona załadowana. Gotowa do renderowania wykresów.");
+
         // Tutaj można dodać wspólną logikę JS dla ładowania danych
+
     </script>
+
 </body>
+
 </html>
