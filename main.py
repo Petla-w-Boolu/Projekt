@@ -1,5 +1,7 @@
 from flask import Flask, render_template, jsonify
 
+API_USER = 'f1419a42-2ab1-440c-caeb-08de0e3351a1'
+
 # Utworzenie instancji aplikacji Flask 
 app = Flask(__name__) 
 
