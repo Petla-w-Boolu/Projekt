@@ -1,979 +1,507 @@
 /* static/style.css - Kompletny i Rozbudowany CSS dla eStatysta Płock - WERSJA W PEŁNI RESPONSIVE */
 
-
-
 /* --- GLOBALNY BOX-SIZING (Klucz do Responsywności) --- */
-
 html {
-
     box-sizing: border-box;
-
 }
-
-
 
 *, *::before, *::after {
-
     box-sizing: inherit;
-
 }
-
-
 
 :root {
-
     /* Paleta Kolorów i Fontów */
-
     --primary-color: #004d99; /* Głęboki, profesjonalny błękit (Statystyka) */
-
     --accent-color: #00aaff; /* Jasny błękit (Akcent, Płock) */
-
     --background-light: #ffffff; /* Białe tło */
-
     --background-gray: #f7f7f7; /* Tło strony */
-
     --text-dark: #333333;
-
     --text-light: #666666;
-
     --font-family: 'Lato', 'Arial', sans-serif;
-
     
-
     /* Zmienne Estetyczne */
-
     --border-radius-base: 12px; /* Zwiększone zaokrąglenie */
-
     --shadow-subtle: 0 4px 6px rgba(0, 0, 0, 0.08); /* Lekki cień */
-
     --shadow-prominent: 0 6px 15px rgba(0, 0, 0, 0.15); /* Wyraźny cień (dla wyszukiwarki) */
-
     
-
     /* Zmienne dla Menu Bocznego (Desktop) */
-
     --icon-nav-width: 40px; 
-
     --icon-nav-expanded-width: 250px; 
-
     
-
     /* Zmienna śledząca aktualną szerokość menu */
-
     --current-nav-width: var(--icon-nav-width); 
-
 }
-
-
 
 /* KLUCZOWY ELEMENT: Zmiana zmiennej po najechaniu na menu (TYLKO DESKTOP) */
-
 body:has(.icon-nav:hover) {
-
     --current-nav-width: var(--icon-nav-expanded-width);
-
 }
 
-
-
 /* -------------------------------------------
-
  * 1. BAZA I STRUKTURA
-
  * ------------------------------------------- */
-
-
 
 body {
-
     font-family: var(--font-family);
-
     margin: 0;
-
     padding: 0;
-
     background-color: var(--background-gray); 
-
     color: var(--text-dark);
-
     line-height: 1.6;
-
     overflow-x: hidden;
-
 }
-
-
 
 .sr-only {
-
     position: absolute;
-
     width: 1px;
-
     height: 1px;
-
     padding: 0;
-
     margin: -1px;
-
     overflow: hidden;
-
     clip: rect(0,0,0,0);
-
     border: 0;
-
 }
 
-
-
 /* -------------------------------------------
-
  * 2. NAGŁÓWEK (HEADER)
-
  * ------------------------------------------- */
-
-
 
 .header {
-
     margin-left: var(--current-nav-width);
-
     transition: margin-left 0.3s ease;
-
     
-
     display: flex;
-
     /* POPRAWKA: Zmiana na space-between dla poprawnego układu mobilnego (Logo lewo, Controls prawo) */
-
     justify-content: space-between; 
-
     align-items: center;
-
     padding: 15px 30px;
-
     background-color: var(--background-light);
-
     box-shadow: var(--shadow-subtle); 
-
     z-index: 999; 
-
     position: relative;
-
 }
-
-
 
 .logo a {
-
     font-size: 24px;
-
     font-weight: 700;
-
     color: var(--primary-color);
-
     text-decoration: none;
-
     letter-spacing: 0.5px;
-
 }
-
-
 
 /* Nowy styl dla kontrolek nagłówka (jeśli dodasz tam przyciski) */
-
 .header-controls {
-
     display: flex;
-
     align-items: center;
-
 }
 
-
-
 /* -------------------------------------------
-
  * 3. MENU PIONOWE (ICON-NAV - DESKTOP LOGIC)
-
  * ------------------------------------------- */
-
-
 
 .icon-nav {
-
     position: fixed;
-
     left: 0; 
-
     top: 0;
-
     height: 100%;
-
     width: var(--icon-nav-width); 
-
     background-color: var(--primary-color);
-
     box-shadow: 3px 0 8px rgba(0,0,0,0.2); 
-
     padding-top: 55px; 
-
     overflow: hidden;
-
     transition: width 0.3s ease; 
-
     z-index: 1000;
-
 }
-
-
 
 .icon-nav:hover {
-
     width: var(--icon-nav-expanded-width); 
-
 }
-
-
 
 .icon-nav ul {
-
     list-style: none;
-
     padding: 0;
-
     margin: 0;
-
 }
-
-
 
 .icon-nav li a {
-
     padding: 15px 5px; 
-
     display: flex;
-
     align-items: center;
-
     text-decoration: none;
-
     color: white;
-
     white-space: nowrap;
-
     transition: background-color 0.2s;
-
 }
-
-
 
 .icon-nav li a:hover, .icon-nav li.active a {
-
     background-color: rgba(255, 255, 255, 0.2);
-
     color: var(--accent-color);
-
 }
-
-
 
 .icon-nav i {
-
     font-size: 1.4em;
-
     width: 30px; 
-
     text-align: center;
-
     margin-right: 15px;
-
     transition: color 0.2s;
-
 }
-
-
 
 .icon-nav .nav-name {
-
     opacity: 1; 
-
     transition: opacity 0.3s ease;
-
 }
-
-
 
 /* Ukrycie nazwy, gdy menu nie jest rozwinięte (TYLKO DESKTOP) */
-
 .icon-nav:not(:hover) .nav-name {
-
     display: none; 
-
 }
-
-
 
 .icon-nav .separator {
-
     margin: 10px 0;
-
 }
-
 .icon-nav hr {
-
     border: none;
-
     border-top: 1px solid rgba(255, 255, 255, 0.3);
-
     margin: 0 5px;
-
 }
-
-
 
 /* -------------------------------------------
-
  * 4. GŁÓWNA TREŚĆ (MAIN-LAYOUT & CONTENT)
-
  * ------------------------------------------- */
-
-
 
 .main-layout {
-
     margin-left: var(--current-nav-width); 
-
     transition: margin-left 0.3s ease;
-
     
-
     min-height: calc(100vh - 55px);
-
     
-
     display: flex;
-
     justify-content: center; 
-
     align-items: flex-start; 
-
     padding: 50px 20px;
-
 }
-
-
 
 .content {
-
     max-width: 900px; 
-
     width: 100%;
-
     text-align: center;
-
 }
-
-
 
 /* Tytuły Podstron */
-
 .page-header-title {
-
     font-size: 2.5em;
-
     color: var(--primary-color);
-
     margin-bottom: 10px;
-
     font-weight: 700;
-
 }
-
-
 
 .description-text {
-
     font-size: 1.1em;
-
     color: var(--text-light);
-
     margin-bottom: 40px;
-
     max-width: 700px;
-
     margin-left: auto;
-
     margin-right: auto;
-
 }
 
-
-
 /* -------------------------------------------
-
  * 5. WYSZUKIWARKA (Strona Główna)
-
  * ------------------------------------------- */
-
-
 
 .search-title {
-
     font-size: 2.2em;
-
     color: var(--primary-color);
-
     margin-bottom: 25px;
-
     font-weight: 300;
-
     width: 100%;
-
 }
-
-
 
 .main-search-form {
-
     display: flex;
-
     justify-content: center;
-
     max-width: 600px;
-
     margin: 0 auto 50px auto; 
-
     
-
     border-radius: var(--border-radius-base);
-
     box-shadow: var(--shadow-prominent); 
-
     
-
     overflow: hidden;
-
 }
-
-
 
 .main-search-form input[type="search"] {
-
     padding: 15px 20px;
-
     border: none;
-
     flex-grow: 1;
-
     font-size: 1.1em;
-
     outline: none;
-
 }
-
-
 
 .main-search-form button {
-
     padding: 15px 25px;
-
     border: none;
-
     background-color: var(--accent-color);
-
     color: white;
-
     cursor: pointer;
-
     font-size: 1.1em;
-
     transition: background-color 0.2s;
-
     border-top-right-radius: var(--border-radius-base);
-
     border-bottom-right-radius: var(--border-radius-base);
-
 }
-
-
 
 .main-search-form button:hover {
-
     background-color: #007bb3;
-
 }
 
-
-
 /* -------------------------------------------
-
  * 6. KARTY DANYCH I WYKRESY
-
  * ------------------------------------------- */
-
-
 
 .data-section-grid {
-
     display: grid;
-
     /* Płynny grid dla desktopu */
-
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-
     gap: 20px;
-
     margin-top: 20px;
-
     text-align: left;
-
 }
-
-
 
 .data-section-grid .full-width {
-
     grid-column: 1 / -1; 
-
 }
-
-
 
 .data-preview {
-
     background-color: var(--background-light);
-
     padding: 25px;
-
     border-radius: var(--border-radius-base);
-
     box-shadow: var(--shadow-subtle);
-
     transition: transform 0.2s, box-shadow 0.2s;
-
 }
-
-
 
 .data-preview:hover {
-
     transform: translateY(-3px);
-
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-
 }
-
-
 
 .data-preview h3 {
-
     color: var(--primary-color);
-
     font-size: 1.2em;
-
     margin-top: 0;
-
     border-bottom: 1px solid #eee;
-
     padding-bottom: 10px;
-
     margin-bottom: 15px;
-
 }
-
 .data-preview .main-metric {
-
     font-size: 3em;
-
     font-weight: 700;
-
     color: var(--text-dark);
-
     line-height: 1;
-
 }
-
 .data-preview .change-info {
-
     color: #4CAF50; 
-
     font-weight: 600;
-
     margin-top: 5px;
-
     font-size: 0.9em;
-
 }
-
-
 
 .chart-container {
-
     min-height: 350px;
-
     display: flex;
-
     flex-direction: column;
-
 }
-
 .chart-container canvas {
-
     flex-grow: 1;
-
     max-height: 300px;
-
 }
-
-
 
 /* -------------------------------------------
-
  * 7. ELEMENTY FORMULARZA I PRZYCISKI
-
  * ------------------------------------------- */
-
-
 
 select, input[type="email"], input[type="search"], textarea {
-
     padding: 10px;
-
     border: 1px solid #ddd;
-
     border-radius: 4px;
-
     margin-bottom: 10px;
-
     width: 100%; 
-
     box-sizing: border-box; 
-
 }
-
-
 
 .primary-button {
-
     background-color: var(--primary-color);
-
     color: white;
-
     padding: 10px 20px;
-
     border: none;
-
     border-radius: var(--border-radius-base); 
-
     cursor: pointer;
-
     font-size: 1em;
-
     transition: background-color 0.2s, box-shadow 0.2s;
-
 }
-
 .primary-button:hover {
-
     background-color: #003366;
-
     box-shadow: var(--shadow-subtle);
-
 }
-
-
 
 /* -------------------------------------------
-
  * 8. STOPKA (FOOTER)
-
  * ------------------------------------------- */
-
-
 
 footer {
-
     margin-left: var(--current-nav-width);
-
     transition: margin-left 0.3s ease;
-
     background-color: var(--background-light); 
-
     border-top: 1px solid #eeeeee;
-
     text-align: center; 
-
     padding: 10px; 
-
     font-size: 0.8em; 
-
     color: var(--text-light);
-
 }
 
 
-
-
-
 /* -------------------------------------------
-
- * 9. RESPONSIVE DESIGN (MOBILE)
-
+ * 9. RESPONSIVE DESIGN (MOBILE) - ZOPTYMALIZOWANA WERSJA
  * ------------------------------------------- */
 
-
-
 @media (max-width: 768px) {
-
     
-
     /* --- ZMIENNE I LOGIKA --- */
-
     
-
     /* Dezaktywujemy logikę hover i dynamiczne marginesy */
-
     :root {
-
         --current-nav-width: 0px; 
-
     }
-
     body:has(.icon-nav:hover) {
-
         --current-nav-width: 0px; 
-
     }
-
     
-
     /* Resetujemy marginesy związane z menu bocznym */
-
     .header, .main-layout, footer {
-
         margin-left: 0 !important;
-
     }
-
     
-
     /* Padding na dole głównej treści, aby nie chowała się pod menu mobilnym */
-
     .main-layout {
-
         padding-bottom: 70px; /* Zwiększony padding, by zostawić miejsce dla dolnego menu */
-
         padding-top: 30px;
-
+        padding-left: 10px; /* Dodatkowe zmniejszenie marginesów bocznych */
+        padding-right: 10px;
+    }
+    
+    /* --- NAGŁÓWEK (Header) --- */
+    
+    .header {
+        padding: 10px 15px; /* Mniejszy padding w nagłówku */
+    }
+    
+    .logo a {
+        font-size: 20px; /* Mniejsze logo */
     }
 
+    /* --- NAWIGACJA (MENU DOLNE) - KLUCZOWA ZMIANA --- */
     
-
-    /* --- NAWIGACJA (MENU DOLNE) --- */
-
-    
-
     .icon-nav {
-
         position: fixed;
-
         bottom: 0;
-
         top: auto;
-
         left: 0; 
-
         width: 100%;
-
-        height: 60px; /* Stała, wygodna wysokość mobilnego menu */
-
+        height: 55px; /* Zmniejszona wysokość */
         padding-top: 0;
-
         box-shadow: 0 -2px 8px rgba(0,0,0,0.2);
-
     }
-
     
-
     /* Wyłączamy hover na telefonach */
-
     .icon-nav:hover {
-
         width: 100%;
-
     }
-
-
 
     .icon-nav ul {
-
         display: flex;
-
-        justify-content: space-around;
-
+        justify-content: space-around; /* Równomierne rozłożenie elementów */
         align-items: center;
-
         height: 100%;
-
     }
-
     
-
     .icon-nav li a {
-
         flex-direction: column;
-
-        padding: 5px 10px;
-
-        line-height: 1.2;
-
-        justify-content: center; /* Centrowanie elementów */
-
+        padding: 5px 2px; /* MOCNO ZREDUKOWANY PADDING HORIZONTALNY */
+        line-height: 1.1; 
+        justify-content: center; 
+        min-width: 50px; /* Zapewnienie obszaru dotyku */
+        text-align: center;
+        white-space: normal; /* Pozwala na łamanie wiersza w razie potrzeby (choć w menu dolnym nazwy powinny być krótkie) */
     }
-
-
 
     .icon-nav i {
-
+        font-size: 1.2em; /* Zmniejszone ikony */
+        width: auto; 
+        text-align: center;
         margin-right: 0;
-
-        margin-bottom: 3px;
-
+        margin-bottom: 2px;
     }
-
-
 
     .icon-nav .nav-name {
-
-        font-size: 0.7em;
-
+        font-size: 0.65em; /* Zmniejszony tekst nazwy */
         text-transform: uppercase;
-
-        letter-spacing: 0.5px;
-
-        /* Nazwy zawsze widoczne w menu dolnym */
-
+        letter-spacing: 0.2px; 
         display: block !important; 
-
         opacity: 1;
-
     }
-
     
-
     /* Ukrywamy logikę chowania/rozwijania na mobile */
-
     .icon-nav:not(:hover) .nav-name {
-
         display: block; 
-
     }
-
     
-
     .icon-nav .separator {
-
         display: none;
-
     }
-
-
 
     /* --- TREŚĆ I TYTUŁY --- */
-
     
-
     .search-title, .page-header-title {
-
-        font-size: 1.8em; /* Mniejsze tytuły */
-
+        font-size: 1.6em; /* Mniejsze tytuły */
     }
-
     .description-text {
-
-        font-size: 1em;
-
-        margin-bottom: 25px;
-
+        font-size: 0.95em;
+        margin-bottom: 20px;
     }
-
-
 
     /* --- WYSZUKIWARKA MOBILNA --- */
-
     
-
     .main-search-form {
-
         flex-direction: column;
-
-        max-width: 95%; /* Lepsze wykorzystanie przestrzeni */
-
-        box-shadow: var(--shadow-subtle); /* Mniejszy cień dla subtelności */
-
+        max-width: 95%; 
+        box-shadow: var(--shadow-subtle); 
     }
-
     
-
     .main-search-form input[type="search"] {
-
-        order: 1; /* Pole tekstowe nad przyciskiem */
-
+        order: 1; 
         margin-bottom: 10px;
-
         border-radius: var(--border-radius-base); 
-
     }
-
     
-
     .main-search-form button {
-
-        order: 2; /* Przycisk pod polem tekstowym */
-
+        order: 2; 
         width: 100%;
-
         border-radius: var(--border-radius-base); 
-
     }
-
-
 
     /* --- KARTY DANYCH I WYKRESY MOBILNE --- */
 
-
-
     /* Wymuszamy jedną kolumnę */
-
     .data-section-grid {
-
         grid-template-columns: 1fr;
-
     }
-
-
 
     .data-preview {
-
         padding: 20px; 
-
     }
-
-
 
     .data-preview .main-metric {
-
-        font-size: 2.5em;
-
+        font-size: 2.2em;
     }
-
-
 
     .chart-container {
-
-        min-height: 250px; /* Zmniejszenie minimalnej wysokości wykresu */
-
+        min-height: 250px; 
     }
-
 }
