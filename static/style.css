@@ -1,4 +1,4 @@
-/* static/style.css - Kompletny i Rozbudowany CSS dla eStatysta Płock - WERSJA RESPONSIVE */
+/* static/style.css - Kompletny i Rozbudowany CSS dla eStatysta Płock - WERSJA W PEŁNI RESPONSIVE */
 
 /* --- GLOBALNY BOX-SIZING (Klucz do Responsywności) --- */
 html {
@@ -71,7 +71,8 @@ body {
     transition: margin-left 0.3s ease;
     
     display: flex;
-    justify-content: flex-start;
+    /* POPRAWKA: Zmiana na space-between dla poprawnego układu mobilnego (Logo lewo, Controls prawo) */
+    justify-content: space-between; 
     align-items: center;
     padding: 15px 30px;
     background-color: var(--background-light);
@@ -86,6 +87,12 @@ body {
     color: var(--primary-color);
     text-decoration: none;
     letter-spacing: 0.5px;
+}
+
+/* Nowy styl dla kontrolek nagłówka (jeśli dodasz tam przyciski) */
+.header-controls {
+    display: flex;
+    align-items: center;
 }
 
 /* -------------------------------------------
@@ -315,8 +322,8 @@ select, input[type="email"], input[type="search"], textarea {
     border: 1px solid #ddd;
     border-radius: 4px;
     margin-bottom: 10px;
-    width: 100%; /* Płynna szerokość */
-    box-sizing: border-box; /* Utrzymuje stabilność wewnątrz elementu */
+    width: 100%; 
+    box-sizing: border-box; 
 }
 
 .primary-button {

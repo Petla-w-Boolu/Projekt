@@ -16,37 +16,10 @@
         <div class="logo">
             <a href="{{ url_for('index') }}">eStatysta Płock</a>
         </div>
-        </header>
-
-    <div class="main-layout">
         
-        <main class="content" role="main">
-            
-            <section id="search-section" aria-labelledby="search-heading">
-                <h2 id="search-heading" class="search-title">Czego chcesz się dowiedzieć o swoim mieście?</h2>
-                <form role="search" action="#" method="GET" class="main-search-form">
-                    <label for="search-input" class="sr-only">Wyszukaj dane statystyczne</label>
-                    <input type="search" id="search-input" 
-                           placeholder="Wpisz np.: bezrobocie, edukacja, budżet..." name="q">
-                    <button type="submit" title="Wyszukaj"><i class="fas fa-search"></i></button>
-                </form>
-            </section>
-            
-            <section id="chart-area" aria-label="Główny obszar wykresów">
-                <h3 class="section-title">Ostatnie i Najpopularniejsze Dane:</h3>
-                {% if initial_data %}
-                    <div class="data-preview">
-                        <h4>Ludność Płocka (Przykładowe dane):</h4>
-                        <p>Labels: {{ initial_data.labels | join(', ') }}</p>
-                        <p>Values: {{ initial_data.values | join(', ') }}</p>
-                    </div>
-                {% else %}
-                    <p class="placeholder-text">Wybierz kategorię z bocznego menu lub użyj wyszukiwarki.</p>
-                {% endif %}
-            </section>
-
-        </main>
-    </div>
+        <div class="header-controls">
+            </div>
+        </header>
 
     <nav class="icon-nav" role="navigation" aria-label="Główne menu nawigacyjne">
         <ul>
@@ -98,12 +71,42 @@
         </ul>
     </nav>
 
-    <footer role="contentinfo" style="text-align: center; padding: 10px; font-size: 0.8em; color: #666; border-top: 1px solid #ccc;">
+    <div class="main-layout">
+        <main class="content" role="main">
+            
+            <section id="search-section" aria-labelledby="search-heading">
+                <h2 id="search-heading" class="search-title">Czego chcesz się dowiedzieć o swoim mieście?</h2>
+                <form role="search" action="#" method="GET" class="main-search-form">
+                    <label for="search-input" class="sr-only">Wyszukaj dane statystyczne</label>
+                    <input type="search" id="search-input" 
+                           placeholder="Wpisz np.: bezrobocie, edukacja, budżet..." name="q">
+                    <button type="submit" title="Wyszukaj"><i class="fas fa-search"></i></button>
+                </form>
+            </section>
+            
+            <section id="chart-area" aria-label="Główny obszar wykresów">
+                <h3 class="section-title">Ostatnie i Najpopularniejsze Dane:</h3>
+                {% if initial_data %}
+                    <div class="data-preview">
+                        <h4>Ludność Płocka (Przykładowe dane):</h4>
+                        <div class="data-section-grid">
+                            <div class="data-card">Labels: {{ initial_data.labels | join(', ') }}</div>
+                            <div class="data-card">Values: {{ initial_data.values | join(', ') }}</div>
+                        </div>
+                    </div>
+                {% else %}
+                    <p class="placeholder-text">Wybierz kategorię z menu lub użyj wyszukiwarki.</p>
+                {% endif %}
+            </section>
+
+        </main>
+    </div>
+
+    <footer role="contentinfo">
         &copy; 2025 eStatysta Płock. Dane statystyczne pochodzą z Banku Danych Lokalnych GUS.
     </footer>
 
     <script>
-        // Tutaj będzie kod JS do ładowania danych
         console.log("Strona załadowana. Gotowa do pobrania danych API.");
     </script>
 </body>
