@@ -1,13 +1,20 @@
-from flask import Flask 
+from flask import Flask, render_template, jsonify
 
 # Utworzenie instancji aplikacji Flask 
 app = Flask(__name__) 
 
-# Zdefiniowanie trasy (route) dla strony głównej 
-@app.route('/') 
-def hello_world(): 
-    return 'Jebać rudą kurwe' 
+# Proste dane statystyczne (np. liczba mieszkańców Płocka w kolejnych latach)
+data = {
+    "labels": ["2018", "2019", "2020", "2021", "2022", "2023"],
+    "values": [121000, 120500, 120200, 119800, 119500, 119000]
+}
 
-# Uruchomienie aplikacji 
-if __name__ == '__main__': 
+@app.route('/')
+def index():
+    return render_template('index.html')
+@app.route('/api/data')
+def get_data():
+    return jsonify(data)
+
+if __name__ == '__main__':
     app.run(debug=True)

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>eStatystyka Płocka</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f7fa;
+            text-align: center;
+            margin: 50px;
+        }
+        canvas {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #2c3e50; }
+    </style>
+</head>
+<body>
+    <h1>📊 eStatystyka Płocka</h1>
+    <p>Przykładowy wykres populacji miasta w latach 2018–2023</p>
+    <canvas id="chart"></canvas>
+
+    <script>
+        async function loadChart() {
+            const response = await fetch('/api/data');
+            const data = await response.json();
+
+            new Chart(document.getElementById('chart'), {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Liczba mieszkańców',
+                        data: data.values,
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52,152,219,0.2)',
+                        tension: 0.3,
+                        fill: true,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: false }
+                    }
+                }
+            });
+        }
+
+        loadChart();
+    </script>
+</body>
+</html>
