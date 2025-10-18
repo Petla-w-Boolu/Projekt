@@ -6,7 +6,7 @@ app = Flask(__name__)
 # Zdefiniowanie trasy (route) dla strony głównej 
 @app.route('/') 
 def hello_world(): 
-    return 'Hello, World!' 
+    return 'Jebać rudą kurwe' 
 
 # Uruchomienie aplikacji 
 if __name__ == '__main__': 
