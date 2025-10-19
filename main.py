@@ -119,7 +119,7 @@ def logout():
 def generate_interactive_report_html(gus_data):
     """
     Przetwarza pełny JSON z GUS (z Gemini) i generuje bogaty raport HTML.
-    Jest odporna na różne formaty wejściowe.
+    Jest odporna na różne formaty wejściowe i obsługuje wiele serii danych.
     """
     try:
         # --- ŚCIEŻKA A: Pełny raport z danymi (wykrywamy po 'data_series') ---
@@ -129,71 +129,9 @@ def generate_interactive_report_html(gus_data):
             if not gus_data['data_series']:
                     raise ValueError("Klucz 'data_series' jest pustą listą.")
                     
-            # Bierzemy pierwszą serię TYLKO do obliczeń KPI i tabeli na dole
-            # Wykres będzie używał WSZYSTKICH serii
-            data_series_dla_kpi = gus_data['data_series'][0] 
-            data_points = data_series_dla_kpi.get('data_points', [])
-
-            if not data_points:
-                raise ValueError("Klucz 'data_series' istnieje, ale 'data_points' jest pusty.")
-
             title = data_meta.get('title', 'Raport Danych')
             source = data_meta.get('source_info', 'Brak danych o źródle')
-            latest_period_str = data_meta.get('latest_period', 'N/A')
             statistical_commentary = data_meta.get('statistical_commentary', 'Brak komentarza analitycznego.')
-
-            # Konwersja na liczby z obsługą błędów (np. jeśli value nie jest liczbą)
-            values = []
-            valid_data_points = []
-            for p in data_points:
-                try:
-                    values.append(float(p['value']))
-                    valid_data_points.append(p)
-                except (ValueError, TypeError):
-                    print(f"Ostrzeżenie: Pomijam błędny punkt danych: {p}")
-            
-            if not values:
-                    raise ValueError("Brak poprawnych punktów danych ('value') do przetworzenia.")
-
-            data_points = valid_data_points # Używamy tylko poprawnych punktów
-
-            # --- Obliczenia KPI (zabezpieczone przed błędami) ---
-            # UWAGA: Te KPI wciąż bazują tylko na PIERWSZEJ serii danych
-            latest_point = data_points[-1]
-            previous_point = data_points[-2] if len(data_points) > 1 else None
-            
-            latest_date_parts = latest_point['category'].split('-')
-            yoy_point = None # Ustawiamy domyślnie na None
-
-            # Sprawdzamy, czy kategoria ma co najmniej 2 części (np. YYYY i MM)
-            if len(latest_date_parts) >= 2:
-                try:
-                    # Próbujemy obliczyć kategorię r/r
-                    yoy_category = f"{int(latest_date_parts[0]) - 1}-{latest_date_parts[1]}"
-                    yoy_point = next((p for p in data_points if p['category'] == yoy_category), None)
-                except (ValueError, IndexError):
-                    # Przechwytujemy błąd, jeśli np. 'category' to 'Styczeń-2023' 
-                    # (int('Styczeń') się nie uda) lub format jest jeszcze inny.
-                    print(f"Ostrzeżenie: Nie można obliczyć r/r dla kategorii: {latest_point['category']}")
-                    yoy_point = None # Na wszelki wypadek resetujemy
-
-            kpi_latest = latest_point['value']
-            kpi_mom_diff = round(kpi_latest - previous_point['value'], 2) if previous_point else None
-            kpi_yoy_diff = round(kpi_latest - yoy_point['value'], 2) if yoy_point else None
-
-            kpi_max = max(values)
-            # Znajdź pierwszy pasujący element (na wypadek duplikatów max)
-            kpi_max_point = next(p for p in data_points if p['value'] == kpi_max)
-            kpi_max_date = kpi_max_point['category']
-
-            kpi_min = min(values)
-            # Znajdź pierwszy pasujący element (na wypadek duplikatów min)
-            kpi_min_point = next(p for p in data_points if p['value'] == kpi_min)
-            kpi_min_date = kpi_min_point['category']
-
-            stat_mean = round(statistics.mean(values), 2)
-            stat_median = round(statistics.median(values), 2)
-            stat_stddev = round(statistics.stdev(values), 2) if len(values) > 1 else 0
             unit = data_meta.get('unit', '') # Pobieramy jednostkę
 
             # --- Funkcje pomocnicze do budowy HTML ---
@@ -222,44 +160,121 @@ def generate_interactive_report_html(gus_data):
                 if diff is None: return "Brak danych"
                 return f"{diff:+.1f} {unit if unit != '%' else 'p.p.'}"
 
-            # --- Budowanie komponentów HTML ---
+            # --- Przetwarzanie każdej serii danych osobno dla KPI i statystyk ---
+            series_analysis_html_parts = []
+            for series in gus_data['data_series']:
+                series_name = series.get('series_name', 'Nienazwana seria')
+                data_points = series.get('data_points', [])
+
+                if not data_points:
+                    # Jeśli seria nie ma punktów danych, pomijamy ją w analizie KPI
+                    series_analysis_html_parts.append(f"<h4>Analiza dla '{series_name}'</h4><p>Brak punktów danych do analizy.</p>")
+                    continue
+
+                # Konwersja na liczby z obsługą błędów
+                values = []
+                valid_data_points = []
+                for p in data_points:
+                    try:
+                        values.append(float(p['value']))
+                        valid_data_points.append(p)
+                    except (ValueError, TypeError):
+                        print(f"Ostrzeżenie: Pomijam błędny punkt danych w serii '{series_name}': {p}")
+                
+                if not values:
+                    series_analysis_html_parts.append(f"<h4>Analiza dla '{series_name}'</h4><p>Brak poprawnych punktów danych do analizy.</p>")
+                    continue
+
+                data_points = valid_data_points # Używamy tylko poprawnych punktów
+
+                # Obliczenia KPI dla bieżącej serii
+                latest_point = data_points[-1]
+                previous_point = data_points[-2] if len(data_points) > 1 else None
+                
+                yoy_point = None
+                latest_date_parts = latest_point['category'].split('-')
+                if len(latest_date_parts) >= 2:
+                    try:
+                        yoy_category = f"{int(latest_date_parts[0]) - 1}-{latest_date_parts[1]}"
+                        yoy_point = next((p for p in data_points if p['category'] == yoy_category), None)
+                    except (ValueError, IndexError):
+                        print(f"Ostrzeżenie: Nie można obliczyć r/r dla kategorii: {latest_point['category']}")
+
+                kpi_latest = latest_point['value']
+                kpi_mom_diff = round(kpi_latest - previous_point['value'], 2) if previous_point else None
+                kpi_yoy_diff = round(kpi_latest - yoy_point['value'], 2) if yoy_point else None
+
+                kpi_max = max(values)
+                kpi_max_point = next(p for p in data_points if p['value'] == kpi_max)
+                kpi_max_date = kpi_max_point['category']
+
+                kpi_min = min(values)
+                kpi_min_point = next(p for p in data_points if p['value'] == kpi_min)
+                kpi_min_date = kpi_min_point['category']
+
+                stat_mean = round(statistics.mean(values), 2)
+                stat_median = round(statistics.median(values), 2)
+                stat_stddev = round(statistics.stdev(values), 2) if len(values) > 1 else 0
+                
+                latest_period_str = data_meta.get('latest_period', 'N/A') # Bierzemy z meta, bo jest wspólne
+
+                # Budowanie HTML dla bieżącej serii
+                kpi_html = f"""
+                <div class="kpi-container">
+                    <div class="kpi-card">
+                        <span class="kpi-title">Aktualna wartość ({latest_period_str})</span>
+                        <span class="kpi-value">{kpi_latest}{unit}</span>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-title">Zmiana (m/m)</span>
+                        <span class="kpi-value {get_diff_class(kpi_mom_diff)}">
+                            {get_diff_icon(kpi_mom_diff)} {format_diff(kpi_mom_diff)}
+                        </span>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-title">Zmiana (r/r)</span>
+                        <span class="kpi-value {get_diff_class(kpi_yoy_diff)}">
+                            {get_diff_icon(kpi_yoy_diff)} {format_diff(kpi_yoy_diff)}
+                        </span>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-title">Minimum</span>
+                        <span class="kpi-value">{kpi_min}{unit} <span class="kpi-date">({kpi_min_date})</span></span>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-title">Maksimum</span>
+                        <span class="kpi-value">{kpi_max}{unit} <span class="kpi-date">({kpi_max_date})</span></span>
+                    </div>
+                </div>
+                """
+                
+                stats_summary_html = f"""
+                <ul class="stats-summary">
+                    <li>Średnia: <strong>{stat_mean}{unit}</strong></li>
+                    <li>Mediana: <strong>{stat_median}{unit}</strong></li>
+                    <li>Odch. standardowe: <strong>{stat_stddev:.2f} {unit if unit != '%' else 'p.p.'}</strong></li>
+                </ul>
+                """
+
+                series_analysis_html_parts.append(f"""
+                <div class="series-analysis-block">
+                    <h3>Analiza dla serii: {series_name}</h3>
+                    {kpi_html}
+                    {stats_summary_html}
+                </div>
+                """)
             
-            # A. Karty KPI
-            kpi_html = f"""
-            <div class="kpi-container">
-                <div class="kpi-card">
-                    <span class="kpi-title">Aktualna wartość ({latest_period_str})</span>
-                    <span class="kpi-value">{kpi_latest}{unit}</span>
-                </div>
-                <div class="kpi-card">
-                    <span class="kpi-title">Zmiana (m/m)</span>
-                    <span class="kpi-value {get_diff_class(kpi_mom_diff)}">
-                        {get_diff_icon(kpi_mom_diff)} {format_diff(kpi_mom_diff)}
-                    </span>
-                </div>
-                <div class="kpi-card">
-                    <span class="kpi-title">Zmiana (r/r)</span>
-                    <span class="kpi-value {get_diff_class(kpi_yoy_diff)}">
-                        {get_diff_icon(kpi_yoy_diff)} {format_diff(kpi_yoy_diff)}
-                    </span>
-                </div>
-                <div class="kpi-card">
-                    <span class="kpi-title">Minimum</span>
-                    <span class="kpi-value">{kpi_min}{unit} <span class="kpi-date">({kpi_min_date})</span></span>
-                </div>
-                <div class="kpi-card">
-                    <span class="kpi-title">Maksimum</span>
-                    <span class="kpi-value">{kpi_max}{unit} <span class="kpi-date">({kpi_max_date})</span></span>
-                </div>
-            </div>
-            """
+            # Połączenie wszystkich części analizy serii
+            all_series_analysis_html = "".join(series_analysis_html_parts)
+
 
             # B. Wykres (Canvas + dane dla Chart.js) - WERSJA DLA WIELU SERII
             canvas_id = f"report-chart-{int(time.time() * 1000)}"
             
             # Zakładamy, że wszystkie serie mają te same etykiety (osie X)
-            # Bierzemy etykiety z pierwszej serii (tej samej co dla KPI)
-            chart_labels = [p['category'] for p in data_points] 
+            # Bierzemy etykiety z pierwszej serii, która ma dane
+            first_valid_series = next((s for s in gus_data['data_series'] if s.get('data_points')), None)
+            chart_labels = [p['category'] for p in first_valid_series['data_points']] if first_valid_series else []
 
             # Definiujemy paletę kolorów dla kolejnych linii
             chart_colors = [
@@ -354,14 +369,51 @@ def generate_interactive_report_html(gus_data):
             </div>
             """
 
-            # D. Tabela ze szczegółowymi danymi (wciąż bazuje tylko na PIERWSZEJ serii)
-            table_rows = "".join([f"<tr><td>{p['category']}</td><td>{p['value']}{unit}</td></tr>" for p in reversed(data_points)])
+            # D. Tabela ze szczegółowymi danymi - WERSJA DLA WIELU SERII
+            
+            # 1. Nagłówki tabeli
+            headers = ["<th>Okres</th>"]
+            for series in gus_data['data_series']:
+                series_name = series.get('series_name', 'Brak nazwy')
+                headers.append(f"<th>{series_name}</th>")
+            header_html = "".join(headers)
+
+            # 2. Przygotowanie danych do tabeli
+            # Tworzymy słownik dla każdej serii, mapujący kategorię na wartość
+            series_data_maps = []
+            for series in gus_data['data_series']:
+                data_map = {}
+                for p in series.get('data_points', []):
+                    try:
+                        # Próbujemy przekonwertować wartość na float, jeśli się nie uda, zostawiamy oryginalną
+                        value_str = f"{float(p['value'])}{unit}"
+                    except (ValueError, TypeError, KeyError):
+                        value_str = p.get('value', 'Brak danych') # Jeśli nie ma 'value' lub nie jest liczbą
+                    data_map[p.get('category')] = value_str
+                series_data_maps.append(data_map)
+
+            # 3. Budowanie wierszy tabeli
+            # Używamy kategorii z pierwszej serii jako podstawy dla osi X
+            table_rows_list = []
+            # Iterujemy po odwróconych punktach danych pierwszej serii, aby najnowsze były na górze
+            if first_valid_series:
+                for p in reversed(first_valid_series.get('data_points', [])):
+                    category = p['category']
+                    row_cells = [f"<td>{category}</td>"]
+                    # Dla każdej serii, znajdujemy wartość dla danej kategorii
+                    for data_map in series_data_maps:
+                        value = data_map.get(category, "N/A") # 'N/A' jeśli w danej serii brakuje punktu dla tej kategorii
+                        row_cells.append(f"<td>{value}</td>")
+                    table_rows_list.append(f"<tr>{''.join(row_cells)}</tr>")
+            
+            table_rows = "".join(table_rows_list)
+
             table_html = f"""
             <h3>Szczegółowe Dane</h3>
             <div class="table-container">
                 <table class="report-table">
                     <thead>
-                        <tr><th>Okres</th><th>{data_meta.get('y_axis_label', 'Wartość')} (dla serii: {data_series_dla_kpi.get('series_name', 'Seria 1')})</th></tr>
+                        <tr>{header_html}</tr>
                     </thead>
                     <tbody>
                         {table_rows}
@@ -375,17 +427,9 @@ def generate_interactive_report_html(gus_data):
             final_html = f"""
             <div class="interactive-report">
                 <h2>{title}</h2>
-                {kpi_html}
+                {all_series_analysis_html}
                 {chart_html}
                 {analysis_html}
-                
-                <h3>Podsumowanie statystyczne (cały okres, dla pierwszej serii)</h3>
-                <ul class="stats-summary">
-                    <li>Średnia: <strong>{stat_mean}{unit}</strong></li>
-                    <li>Mediana: <strong>{stat_median}{unit}</strong></li>
-                    <li>Odch. standardowe: <strong>{stat_stddev:.2f} {unit if unit != '%' else 'p.p.'}</strong></li>
-                </ul>
-                
                 {table_html}
             </div>
             """

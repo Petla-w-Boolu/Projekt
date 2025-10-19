@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ 'Logowanie' if is_login_page else 'Rejestracja' }} - eStatysta Płock</title>
+    <title>{{ 'Logowanie' if is_login_page else 'Rejestracja' }} - eStatystyk Płock</title>
 
     <script>
         (function() {
@@ -34,7 +34,7 @@
         <form method="POST" action="{{ url_for('login') if is_login_page else url_for('register') }}">
             
             <!-- ZMIANA: Usunięto <img> i wstawiono tekst h2 -->
-            <h2 class="logo-text-login">eStatysta Płock</h2>
+            <h2 class="logo-text-login">eStatystyk Płock</h2>
             
             <h1>{{ 'Zaloguj się' if is_login_page else 'Utwórz konto' }}</h1>
 
