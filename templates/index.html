@@ -3,139 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>eStatysta Płock | Dane Statystyczne GUS</title>
+    <title>eStatysta Płock</title>
     
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script>
+        (function() {
+            try {
+                const theme = localStorage.getItem('theme');
+                if (theme === 'dark') {
+                    document.documentElement.classList.add('dark-mode');
+                } else if (theme === 'light') {
+                    document.documentElement.classList.remove('dark-mode');
+                }
+                // Jeśli nie ma nic w localStorage, domyślnie jest jasny (brak klasy)
+            } catch (e) {}
+        })();
+    </script>
     
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"> 
-    
-    <meta name="description" content="Dashboard wizualizujący dane statystyczne GUS dla Płocka i regionu.">
-    
-    <style>
-        /* Nadpisanie zmiennych, jeśli jest potrzebne */
-        :root {
-            --background-color: #f7f9fc; /* Light Gray Background */
-            --text-color: #3c4043; /* Dark Gray Text */
-            --light-bg: #ffffff;
-        }
-
-        /* Tytuł wyszukiwania na środku */
-        .search-title {
-            text-align: center;
-        }
-
-        /* Stylizacja formularza wyszukiwania (zgodna z style.css) */
-        .main-search-form {
-            display: flex;
-            justify-content: center;
-            max-width: 600px;
-            margin: 0 auto 50px auto; 
-            border-radius: var(--border-radius-base);
-            box-shadow: var(--shadow-prominent); 
-            overflow: hidden;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
-
-    <header class="header" role="banner">
-        <div class="logo">
-            <a href="{{ url_for('index') }}">eStatysta Płock</a>
-        </div>
-        
-        <div class="header-controls">
+    <div id="app-container">
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                
+                <a href="{{ url_for('index') }}" class="logo-link">
+                   <span class="logo-text">eStatysta Płock</span> 
+                </a>
+                
+                <button class="new-chat-btn" onclick="window.location.href='/'">
+                    <i data-lucide="plus"></i> Nowy raport
+                </button>
             </div>
-    </header>
 
-    <nav class="icon-nav" role="navigation" aria-label="Główne menu nawigacyjne">
-        <ul>
-            <li class="nav-item {% if page_id == 'index' %}active{% endif %}" data-name="Strona Główna"> 
-                <a href="{{ url_for('index') }}" title="Strona Główna">
-                    <i class="fas fa-home"></i>
-                    <span class="nav-name">Strona Główna</span>
+            <div class="sidebar-history">
+                <span class="history-title">Historia raportów</span>
+                <ul id="history-list">
+                    {% for report in history %}
+                        <a href="#" class="history-item" data-id="{{ report.id }}">
+                            <i data-lucide="message-square"></i>
+                            <span>{{ report.title }}</span>
+                            <button class="delete-history-btn" title="Usuń raport">
+                                <i data-lucide="trash-2"></i>
+                            </button>
+                        </a>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="sidebar-footer">
+                <a href="#" class="user-account">
+                    <i data-lucide="user"></i>
+                    <span>{{ current_user.email }}</span>
                 </a>
-            </li>
-            <li class="nav-item {% if page_id == 'ludnosc' %}active{% endif %}" data-name="Ludność i Demografia">
-                <a href="/data/ludnosc" title="Ludność i Demografia">
-                    <i class="fas fa-user-friends"></i>
-                    <span class="nav-name">Ludność i Demografia</span>
+                <a href="{{ url_for('logout') }}" class="logout-btn">
+                    <i data-lucide="log-out"></i>
+                    <span>Wyloguj</span>
                 </a>
-            </li>
-            <li class="nav-item {% if page_id == 'gospodarka' %}active{% endif %}" data-name="Gospodarka i Finanse">
-                <a href="/data/gospodarka" title="Gospodarka i Finanse">
-                    <i class="fas fa-chart-line"></i>
-                    <span class="nav-name">Gospodarka i Finanse</span>
-                </a>
-            </li>
-            <li class="nav-item {% if page_id == 'edukacja' %}active{% endif %}" data-name="Edukacja i Kultura">
-                <a href="/data/edukacja" title="Edukacja i Kultura">
-                    <i class="fas fa-graduation-cap"></i>
-                    <span class="nav-name">Edukacja i Kultura</span>
-                </a>
-            </li>
-            <li class="nav-item {% if page_id == 'srodowisko' %}active{% endif %}" data-name="Środowisko">
-                <a href="/data/srodowisko" title="Środowisko">
-                    <i class="fas fa-tree"></i>
-                    <span class="nav-name">Środowisko</span>
-                </a>
-            </li>
-            <li class="nav-item separator">
-                <hr>
-            </li>
-            <li class="nav-item {% if page_id == 'porownania_miast' %}active{% endif %}" data-name="Porównania Miast">
-                <a href="/porownania/miasta" title="Porównania Miast">
-                    <i class="fas fa-city"></i>
-                    <span class="nav-name">Porównania Miast</span>
-                </a>
-            </li>
-            <li class="nav-item {% if page_id == 'kontakt' %}active{% endif %}" data-name="Kontakt">
-                <a href="/kontakt" title="Kontakt">
-                    <i class="fas fa-envelope"></i>
-                    <span class="nav-name">Kontakt</span>
-                </a>
-            </li>
-        </ul>
-    </nav>
-    <div class="main-layout">
-        <main class="content" role="main">
+            </div>
+        </nav>
+
+        <button class="sidebar-toggle-btn" id="sidebar-toggle">
+            <i data-lucide="menu"></i>
+        </button>
+
+        <main class="main-content" id="main-content">
+
+            <button class="theme-toggle-main" id="theme-toggle-btn" title="Zmień motyw">
+                <i class="theme-icon icon-sun" data-lucide="sun"></i>
+                <i class="theme-icon icon-moon" data-lucide="moon"></i>
+            </button>
             
-            <section id="search-section" aria-labelledby="search-heading">
-                <h2 id="search-heading" class="search-title">Czego chcesz się dowiedzieć o swoim mieście?</h2>
+            <div class="chat-container">
                 
-                <form role="search" action="#" method="GET" class="main-search-form">
-                    <label for="search-input" class="sr-only">Wyszukaj dane statystyczne</label>
-                    <input type="search" id="search-input" 
-                            placeholder="Wpisz np.: bezrobocie, edukacja, budżet..." name="q">
-                    <button type="submit" title="Wyszukaj"><i class="fas fa-search"></i></button>
-                </form>
-            </section>
-            
-            <section id="chart-area" aria-label="Główny obszar wykresów">
-                <h3 class="section-title">Ostatnie i Najpopularniejsze Dane:</h3>
-                
-                {% if initial_data %}
-                    <div class="data-preview full-width">
-                        <h3>Ludność Płocka (Przykładowe dane):</h3>
-                        <div class="data-section-grid">
-                            <div class="data-preview">Labels: {{ initial_data.labels | join(', ') }}</div>
-                            <div class="data-preview">Values: {{ initial_data.values | join(', ') }}</div>
-                        </div>
+                <div class="welcome-message" id="welcome-message">
+                    <h1>Czego chcesz dowiedzieć się o swoim mieście?</h1>
+                    
+                    <div class="suggested-prompts">
+                        <button class="prompt-suggestion">Jak wygląda rynek pracy w Płocku?</button>
+                        <button class="prompt-suggestion">Podaj dane o bezrobociu w ostatnich 5 latach.</button>
+                        <button class="prompt-suggestion">Analiza demograficzna Płocka.</button>
                     </div>
-                {% else %}
-                    <p class="description-text" style="max-width: 100%;">Wybierz kategorię z menu lub użyj wyszukiwarki.</p>
-                {% endif %}
-            </section>
+                </div>
 
+                <div class="message-list" id="message-list">
+                    </div>
+            </div>
+
+            <div class="prompt-area">
+                <form id="prompt-form">
+                    <div class="prompt-input-wrapper">
+                        <textarea
+                            id="prompt-input"
+                            rows="1"
+                            placeholder="Zapytaj o dane z Płocka, np. o demografię..."
+                        ></textarea>
+                        <button type="submit" class="send-btn" id="send-btn">
+                            <i data-lucide="arrow-right"></i>
+                        </button>
+                    </div>
+                </form>
+                
+            </div>
         </main>
     </div>
 
-    <footer class="footer" role="contentinfo">
-        &copy; 2025 eStatysta Płock | Dane miejskie z wykorzystaniem generatywnej AI. | Dane statystyczne pochodzą z Banku Danych Lokalnych GUS.
-    </footer>
-
-    <script>
-        console.log("Strona główna załadowana. Menu nawigacyjne jest aktywne.");
-        // Opcjonalnie: dodaj logikę JS do aktywowania elementu 'Strona Główna' w menu, jeśli nie jest to robione przez Jinja.
-    </script>
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
 </body>
 </html>

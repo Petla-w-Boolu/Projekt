@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ 'Logowanie' if is_login_page else 'Rejestracja' }} - eStatysta Płock</title>
+
+    <script>
+        (function() {
+            try {
+                const theme = localStorage.getItem('theme');
+                if (theme === 'dark') {
+                    document.documentElement.classList.add('dark-mode');
+                } else if (theme === 'light') {
+                    document.documentElement.classList.remove('dark-mode');
+                }
+            } catch (e) {}
+        })();
+    </script>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    
+    <!-- DODANA POPRAWKA: Gwarantuje wyśrodkowanie tekstu logo -->
+    <style>
+        .logo-text-login {
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="login-page">
+
+    <div class="login-container">
+        <form method="POST" action="{{ url_for('login') if is_login_page else url_for('register') }}">
+            
+            <!-- ZMIANA: Usunięto <img> i wstawiono tekst h2 -->
+            <h2 class="logo-text-login">eStatysta Płock</h2>
+            
+            <h1>{{ 'Zaloguj się' if is_login_page else 'Utwórz konto' }}</h1>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="form-group">
+                <label for="email">E-mail</label>
+                <input type="email" name="email" id="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Hasło</label>
+                <input type="password" name="password" id="password" required>
+            </div>
+            
+            <button type="submit" class="login-submit-btn">
+                {{ 'Zaloguj się' if is_login_page else 'Zarejestruj się' }}
+            </button>
+
+            <div class="login-toggle">
+                {% if is_login_page %}
+                    Nie masz konta? <a href="{{ url_for('register') }}">Zarejestruj się</a>
+                {% else %}
+                    Masz już konto? <a href="{{ url_for('login') }}">Zaloguj się</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
