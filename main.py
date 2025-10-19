@@ -5,6 +5,7 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for, f
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from flask_bcrypt import Bcrypt
+from google import genai
 
 # --- Konfiguracja Aplikacji ---
 app = Flask(__name__)
@@ -116,7 +117,7 @@ def handle_prompt():
 
     try:
         gus_data = get_data_from_gus(prompt_text)
-        ai_response_content = get_ai_report(prompt_text, gus_data)
+        ai_response_content = get_ai_report(gus_data)
         report_title = generate_title_for_history(prompt_text)
 
         new_report = Report(
@@ -167,33 +168,49 @@ def delete_report(report_id):
         return jsonify({'error': 'Błąd serwera'}), 500
 # --- KONIEC NOWEGO KODU ---
 
+def get_gemini_response(prompt):
+    client = genai.Client()
 
-# --- Funkcje "zaślepki" (STUBS) - DO IMPLEMENTACJI ---
+    # 1. Wczytanie stałego prompta (System Instruction) i połączenie w jeden string
+    try:
+        with open('prompt.txt', 'r', encoding='utf-8') as f:
+            system_prompt_content = f.read().strip()
+    except FileNotFoundError:
+        # Zgłoszenie błędu, jeśli plik systemowy nie istnieje
+        raise FileNotFoundError("Brak pliku 'prompt.txt'. Upewnij się, że został utworzony z systemowym promptem.")
+
+    # 2. Zbudowanie końcowego prompta dla modelu
+    # Używamy formatu wymagającego odpowiedzi JSON, wstawiając query do szablonu.
+    final_prompt = f"{system_prompt_content}\n\nZapytanie Użytkownika: \"{prompt}\""
+    
+    # 3. Wywołanie modelu
+    response = client.models.generate_content(
+        model="gemini-2.5-pro", 
+        contents=final_prompt
+    )
+    
+    # 4. Przetwarzanie odpowiedzi: Usunięcie markdownowych znaczników JSON i parsowanie
+    raw_text = response.text.strip()
+    
+    # Usuwanie bloków kodu markdown (```json ... ```)
+    if raw_text.startswith("```json"):
+        raw_text = raw_text.strip("`").strip("json").strip()
+    elif raw_text.startswith("```"):
+         raw_text = raw_text.strip("`").strip()
+
+    try:
+        # Parsowanie do słownika Pythona
+        return json.loads(raw_text)
+    except json.JSONDecodeError as e:
+        print(f"JSON Decode Error: {e}")
+        print(f"Raw text failed to decode: {raw_text}")
+        raise ValueError("Model zwrócił nieprawidłowy format JSON, lub odpowiedź nie jest tylko JSON-em.")
 
 def get_data_from_gus(prompt):
-    """
-    TODO: Zaimplementuj logikę pobierania danych z Banku Danych Lokalnych GUS.
-    """
-    print(f"[Symulacja GUS] Szukam danych dla: {prompt}")
-    if "bezrobocie" in prompt.lower():
-        return {"kategoria": "Bezrobocie", "wartosc": "5.2%", "okres": "Q3 2024", "zrodlo": "GUS BDL"}
-    return {"zrodlo": "GUS BDL", "info": "Nie znaleziono konkretnych danych, dane ogólne."}
+    return get_gemini_response(prompt)
 
-def get_ai_report(prompt, gus_data):
-    """
-    TODO: Zaimplementuj właściwe wywołanie API do modelu AI (np. Gemini).
-    """
-    print(f"[Symulacja AI] Generowanie raportu dla: {prompt} z danymi: {gus_data}")
-    time.sleep(1.5)
-    
-    mock_response = f"Oto analiza dla Twojego zapytania: **'{prompt}'**.\n\n"
-    if "wartosc" in gus_data:
-        mock_response += f"Według danych z Głównego Urzędu Statystycznego (BDL), **{gus_data['kategoria']}** w Płocku wyniosło **{gus_data['wartosc']}** (dane za {gus_data['okres']}).\n\n"
-    else:
-        mock_response += "Nie udało mi się znaleźć konkretnych wskaźników w bazie GUS dla tego zapytania, ale oto ogólna analiza tematu dla Płocka...\n\n"
-    
-    mock_response += "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
-    return mock_response
+def get_ai_report(gus_data):
+    return gus_data['data_meta']['statistical_commentary']
 
 def generate_title_for_history(prompt):
     """

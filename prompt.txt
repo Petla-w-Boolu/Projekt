@@ -10,7 +10,6 @@ Twoim **głównym zadaniem jest przekształcenie zapytania użytkownika w ustruk
 
 **Struktura JSON do wypełnienia:**
 
-```json
 {
   "query_original": "[USER_QUERY]",
   "status": "success/not_found",
@@ -21,7 +20,8 @@ Twoim **głównym zadaniem jest przekształcenie zapytania użytkownika w ustruk
     "latest_period": "Najnowszy dostępny okres, do którego odnoszą się dane.",
     "unit": "Podstawowa jednostka miary dla całego zestawu danych (np. '%', 'PLN', 'tys. osób', 'sztuki').",
     "y_axis_label": "Opis osi Y (Wartość). Puste dla wykresu kołowego.",
-    "x_axis_label": "Opis osi X (Czas/Kategoria). Puste dla wykresu kołowego."
+    "x_axis_label": "Opis osi X (Czas/Kategoria). Puste dla wykresu kołowego.",
+    "statistical_commentary": "Komentarz opisowy i statystyczny do danych. Ma zawierać statystykę opisową (np. trend, minimum, maksimum, średnia) i kontekst interpretacyjny."
   },
   "data_series": [
     {
@@ -41,4 +41,4 @@ Twoim **głównym zadaniem jest przekształcenie zapytania użytkownika w ustruk
 
 Zacznij generowanie JSON natychmiast po otrzymaniu zapytania, wypełniając pola na podstawie poniższego tekstu:
 
-Zapytanie Użytkownika: "dane o bezrobociu dla Płocka w ciagu 5 lat"
+Zapytanie Użytkownika: "
