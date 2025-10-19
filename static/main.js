@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.documentElement.classList.toggle('dark-mode');
             const isDarkMode = document.documentElement.classList.contains('dark-mode');
             localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+            // TODO: Zaktualizuj istniejące wykresy, jeśli są widoczne
         });
     }
     // --- KONIEC LOGIKI MOTYWU ---
@@ -50,9 +51,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const historyItem = deleteButton.closest('.history-item');
                 const reportId = historyItem.dataset.id;
-
-                // USUNIĘTO OKNO POTWIERDZENIA (confirm)
-                // Usunięcie nastąpi natychmiast po kliknięciu.
+                
+                // Możesz przywrócić confirm, jeśli chcesz
+                // if (!confirm("Czy na pewno chcesz usunąć ten raport?")) {
+                //     return;
+                // }
 
                 try {
                     const response = await fetch(`/api/report/delete/${reportId}`, {
@@ -103,6 +106,8 @@ document.addEventListener('DOMContentLoaded', () => {
             promptInput.dispatchEvent(new Event('input')); 
             sendButton.disabled = false;
             promptInput.focus();
+            // Automatyczne wysłanie
+            promptForm.dispatchEvent(new Event('submit'));
         });
     });
 
@@ -136,37 +141,125 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({ prompt: promptText }),
             });
 
-            if (!response.ok) {
-                throw new Error(`Błąd serwera: ${response.statusText}`);
-            }
-
+            // Nawet jeśli jest błąd 500, serwer zwróci JSON z HTML-em błędu
             const data = await response.json();
 
-            loadingElement.innerHTML = marked.parse(data.response);
+            // 1. Wstrzyknij surowy HTML z serwera
+            loadingElement.innerHTML = data.response;
             
-            const newHistoryItem = document.createElement('a');
-            newHistoryItem.href = '#';
-            newHistoryItem.className = 'history-item';
-            newHistoryItem.dataset.id = data.new_history_item.id;
-            
-            newHistoryItem.innerHTML = `
-                <i data-lucide="message-square"></i>
-                <span>${data.new_history_item.title}</span>
-                <button class="delete-history-btn" title="Usuń raport">
-                    <i data-lucide="trash-2"></i>
-                </button>
-            `;
+            // 2. Znajdź i wyrenderuj wykresy wewnątrz wstrzykniętego HTML
+            renderChartsInResponse(loadingElement);
 
-            if (historyList) {
-                historyList.prepend(newHistoryItem);
+            // 3. Znajdź bloki .markdown-content i sparsuj je
+            loadingElement.querySelectorAll('.markdown-content').forEach(el => {
+                // Pobieramy treść z <pre> w środku, aby zachować formatowanie
+                const preElement = el.querySelector('pre');
+                const content = preElement ? preElement.textContent : el.textContent;
+                el.innerHTML = marked.parse(content || '');
+            });
+
+            // 4. Zaktualizuj ikony Lucide w nowej wiadomości
+            lucide.createIcons({ context: loadingElement });
+            
+            // 5. Dodaj nowy element do historii
+            if (data.new_history_item) {
+                const newHistoryItem = document.createElement('a');
+                newHistoryItem.href = '#'; // TODO: Zaimplementuj ładowanie historii
+                newHistoryItem.className = 'history-item';
+                newHistoryItem.dataset.id = data.new_history_item.id;
+                
+                newHistoryItem.innerHTML = `
+                    <i data-lucide="message-square"></i>
+                    <span>${data.new_history_item.title}</span>
+                    <button class="delete-history-btn" title="Usuń raport">
+                        <i data-lucide="trash-2"></i>
+                    </button>
+                `;
+
+                if (historyList) {
+                    historyList.prepend(newHistoryItem);
+                }
+                lucide.createIcons({ context: newHistoryItem });
             }
-            lucide.createIcons();
 
         } catch (error) {
             console.error('Błąd:', error);
-            loadingElement.innerHTML = `<span class="error">Wystąpił błąd. Spróbuj ponownie.</span>`;
+            loadingElement.innerHTML = `<div class="report-error"><p>Wystąpił krytyczny błąd: ${error.message}. Spróbuj ponownie.</p></div>`;
         }
     });
+
+    // --- NOWA FUNKCJA: Renderowanie wykresów ---
+    function renderChartsInResponse(containerElement) {
+        const chartCanvases = containerElement.querySelectorAll('canvas[data-chart-config]');
+        
+        chartCanvases.forEach(canvas => {
+            try {
+                const configString = canvas.dataset.chartConfig;
+                if (!configString) return;
+
+                const config = JSON.parse(configString);
+                
+                // Pobierz opcje motywu
+                const themeOptions = getChartThemeOptions();
+                
+                // Zastosuj kolory motywu do konfiguracji wykresu
+                // Używamy "głębokiego" łączenia, aby nie nadpisać istniejących opcji
+                config.options = {
+                    ...config.options,
+                    plugins: {
+                        ...config.options.plugins,
+                        title: { ...config.options.plugins.title, ...themeOptions.plugins.title },
+                        legend: { ...config.options.plugins.legend, ...themeOptions.plugins.legend }
+                    },
+                    scales: {
+                        x: { ...config.options.scales.x, ...themeOptions.scales.axis },
+                        y: { ...config.options.scales.y, ...themeOptions.scales.axis }
+                    }
+                };
+
+                new Chart(canvas, config);
+
+            } catch (e) {
+                console.error("Błąd renderowania wykresu:", e);
+                canvas.parentElement.innerHTML = `<p class="report-error">Nie udało się załadować wykresu.</p>`;
+            }
+        });
+    }
+
+    // --- NOWA FUNKCJA: Helper do kolorów motywu ---
+    function getChartThemeOptions() {
+        const isDarkMode = document.documentElement.classList.contains('dark-mode');
+        const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+        const textColor = isDarkMode ? '#E3E3E3' : '#202124';
+        const secondaryTextColor = isDarkMode ? '#9B9B9B' : '#5F6368';
+
+        return {
+            plugins: {
+                title: {
+                    color: textColor
+                },
+                legend: {
+                    labels: {
+                        color: textColor
+                    }
+                }
+            },
+            scales: {
+                axis: {
+                    grid: {
+                        color: gridColor
+                    },
+                    ticks: {
+                        color: secondaryTextColor
+                    },
+                    title: {
+                        color: secondaryTextColor
+                    }
+                }
+            }
+        };
+    }
+
 
     // Funkcja pomocnicza do dodawania wiadomości
     function addMessageToUI(role, content) {
@@ -183,13 +276,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="message-content">${content.replace(/\n/g, '<br>')}</div>
             `;
         } else if (role === 'ai' && content) {
+            // Ten scenariusz jest teraz obsługiwany przez 'submit'
+            // Ale zostawiamy dla ewentualnych przyszłych zastosowań
             htmlContent = `
                 <div class="message-avatar ai-avatar">
                     <i data-lucide="bar-chart-3"></i>
                 </div>
-                <div class="message-content">${marked.parse(content)}</div>
+                <div class="message-content">${content}</div>
             `;
         } else if (role === 'ai' && !content) {
+            // Loader
             htmlContent = `
                 <div class="message-avatar ai-avatar">
                     <i data-lucide="bar-chart-3"></i>
@@ -202,7 +298,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         messageElement.innerHTML = htmlContent;
         messageList.appendChild(messageElement);
-        lucide.createIcons(); 
+        lucide.createIcons({ context: messageElement }); 
         
         messageList.scrollTop = messageList.scrollHeight;
         
