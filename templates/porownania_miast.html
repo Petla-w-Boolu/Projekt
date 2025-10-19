@@ -1,0 +1,748 @@
+{% extends "base_subpage.html" %}
+
+{% block title %}Porównywarka Miast | eStatysta Płock{% endblock %}
+
+{% set page_id = 'porownywarka' %}
+
+{% block content_block %}
+    <!-- Wewnętrzny styl dla zaawansowanej porównywarki -->
+    <style>
+        /* Zmieniono domyślny font na Inter dla lepszej czytelności, jeśli to możliwe */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .compare-header {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            color: #1a73e8;
+            border-left: 5px solid #1a73e8;
+        }
+        
+        /* RESPONSYWNOŚĆ: Zmiana domyślnego układu na pojedynczą kolumnę (mobilny first) */
+        .compare-grid {
+            display: grid;
+            grid-template-columns: 1fr; /* Domyślnie jedna kolumna na małych ekranach */
+            gap: 20px;
+        }
+
+        /* Układ dwukolumnowy od szerokości tabletu (min-width: 768px) */
+        @media (min-width: 768px) {
+             .compare-grid {
+                grid-template-columns: 1fr 3fr; /* Dwie kolumny na tabletach i desktopach */
+            }
+        }
+
+        .sidebar {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .sidebar h3 {
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            color: #333;
+        }
+        .select-group {
+            margin-bottom: 15px;
+        }
+        .select-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #555;
+            /* Zwiększenie rozmiaru dotykowego dla lepszej interakcji mobilnej */
+            padding-top: 5px; 
+            padding-bottom: 5px;
+        }
+        .select-group select, .select-group input[type="number"] {
+            width: 100%;
+            padding: 10px; /* Zwiększenie paddingu dla lepszego targetu dotykowego */
+            border: 1px solid #ccc;
+            border-radius: 6px; /* Lekko większe zaokrąglenie */
+            box-sizing: border-box;
+            -webkit-appearance: none; /* Reset dla iOS/Safari */
+            appearance: none;
+        }
+        .city-checkbox-list {
+            max-height: 250px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: #fafafa;
+        }
+        .city-checkbox-list label {
+            display: flex; /* Użycie flex dla lepszego wyrównania */
+            align-items: center;
+            font-weight: normal;
+            margin-bottom: 8px; /* Większy odstęp między opcjami */
+            cursor: pointer;
+            padding: 4px; /* Zwiększenie obszaru dotykowego */
+        }
+        .city-checkbox-list input[type="checkbox"] {
+            margin-right: 10px;
+            /* Zwiększenie rozmiaru samego checkboxa dla mobilnych */
+            transform: scale(1.2); 
+            min-width: 20px;
+            min-height: 20px;
+        }
+
+        .chart-area {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .chart-area h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 1.2em; /* Mniejszy tytuł na mobilnych */
+        }
+        
+        /* Dostosowanie tytułu dla desktopu */
+        @media (min-width: 768px) {
+            .chart-area h3 {
+                font-size: 1.5em; 
+            }
+        }
+
+        /* Styl dla opcji Radar/Multiple Indicators */
+        #multi-indicator-options {
+            display: none; /* Domyślnie ukryte */
+            padding-top: 10px;
+            border-top: 1px dashed #ddd;
+        }
+        #multi-indicator-options label {
+            font-weight: normal !important;
+        }
+        /* Dodatkowy styl dla obszaru raportu */
+        .analysis-report {
+            margin-top: 30px;
+            padding: 15px; /* Mniejszy padding na mobilnych */
+            background-color: #f5f8fa;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            font-size: 0.9em; /* Mniejsza czcionka na mobilnych */
+            line-height: 1.5;
+        }
+        .analysis-report h4 {
+            color: #1a73e8;
+            margin-top: 0;
+            border-bottom: 2px solid #e3f2fd;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+            font-size: 1.0em;
+        }
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-top: 4px solid #1a73e8;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .error-message {
+            color: #d32f2f;
+            background-color: #ffebee;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #d32f2f;
+        }
+    </style>
+
+    <h2 class="page-header-title">📊 Porównywarka Miast (Benchmarking)</h2>
+
+    <div class="compare-header">
+        <strong>Instrukcja:</strong> Wybierz wskaźnik(i) do analizy i zaznacz miasta, które chcesz porównać. Wykres i raport analityczny zaktualizują się automatycznie.
+    </div>
+
+    <div class="compare-grid">
+        <!-- Panel Kontrolny / Filtry -->
+        <div class="sidebar">
+            <h3>Kryteria Porównania</h3>
+            
+            <!-- Wybór Typu Wykresu -->
+            <div class="select-group">
+                <label for="chart-type-select">Typ Wizualizacji:</label>
+                <select id="chart-type-select" onchange="updateIndicatorPanel(); generateComparisonChart()" style="font-weight: bold;">
+                    <option value="bar" selected>Pojedynczy Wskaźnik (Słupkowy)</option>
+                    <option value="radar">Wiele Wskaźników (Radarowy)</option>
+                </select>
+            </div>
+
+            <!-- Wybór Wskaźnika Pojedynczego (Domyślny) -->
+            <div class="select-group" id="single-indicator-options">
+                <label for="indicator-select">Wskaźnik Główny:</label>
+                <select id="indicator-select" onchange="generateComparisonChart()" style="font-weight: bold;">
+                    <option value="population" selected>Liczba Mieszkańców (tys.)</option>
+                    <option value="aqi">Jakość Powietrza (Średnie AQI)</option>
+                    <option value="income">Średnie Wynagrodzenie (PLN)</option>
+                    <option value="unemployment">Stopa Bezrobocia (%)</option>
+                    <option value="green_area">Tereny Zielone (m²/osobę)</option>
+                    <option value="schools_per_capita">Placówki Edukacyjne (na 10 tys. mieszk.)</option>
+                </select>
+            </div>
+            
+            <!-- Wybór Wielu Wskaźników (Radar) -->
+            <div class="select-group" id="multi-indicator-options">
+                <label>Wybierz Wskaźniki do Radaru (Min. 3):</label>
+                <div class="city-checkbox-list" style="max-height: 150px;">
+                    <label><input type="checkbox" name="multi_indicator" value="aqi" onchange="generateComparisonChart()"> Jakość Powietrza</label>
+                    <label><input type="checkbox" name="multi_indicator" value="income" onchange="generateComparisonChart()" checked> Średnie Wynagrodzenie</label>
+                    <label><input type="checkbox" name="multi_indicator" value="unemployment" onchange="generateComparisonChart()" checked> Stopa Bezrobocia</label>
+                    <label><input type="checkbox" name="multi_indicator" value="green_area" onchange="generateComparisonChart()" checked> Tereny Zielone</label>
+                    <label><input type="checkbox" name="multi_indicator" value="schools_per_capita" onchange="generateComparisonChart()"> Edukacja</label>
+                    <label><input type="checkbox" name="multi_indicator" value="population" onchange="generateComparisonChart()"> Populacja</label>
+                </div>
+            </div>
+
+            <!-- Dodatkowe Opcje Filtrowania (Obecnie używane tylko w BAR) -->
+            <div class="select-group">
+                <label for="year-select">Rok Danych:</label>
+                <select id="year-select" onchange="generateComparisonChart()">
+                    <option value="2024" selected>2024</option>
+                    <option value="2023">2023</option>
+                    <option value="2022">2022</option>
+                </select>
+            </div>
+
+            <div class="select-group">
+                <label for="min-pop-input">Minimalna Populacja (tys.):</label>
+                <input type="number" id="min-pop-input" value="50" min="0" onchange="generateComparisonChart()">
+            </div>
+
+            <!-- Wybór Miast -->
+            <h3>Wybór Miast do Analizy</h3>
+            <div class="city-checkbox-list">
+                <!-- Dodano onchange="generateComparisonChart()" do każdego checkboxa -->
+                <label><input type="checkbox" name="city" value="Płock" checked onchange="generateComparisonChart()"> Płock</label>
+                <label><input type="checkbox" name="city" value="Warszawa" onchange="generateComparisonChart()"> Warszawa</label>
+                <label><input type="checkbox" name="city" value="Kraków" onchange="generateComparisonChart()"> Kraków</label>
+                <label><input type="checkbox" name="city" value="Łódź" onchange="generateComparisonChart()"> Łódź</label>
+                <label><input type="checkbox" name="city" value="Gdańsk" onchange="generateComparisonChart()"> Gdańsk</label>
+                <label><input type="checkbox" name="city" value="Wrocław" onchange="generateComparisonChart()"> Wrocław</label>
+                <label><input type="checkbox" name="city" value="Poznań" onchange="generateComparisonChart()"> Poznań</label>
+                <label><input type="checkbox" name="city" value="Bydgoszcz" onchange="generateComparisonChart()"> Bydgoszcz</label>
+                <label><input type="checkbox" name="city" value="Toruń" onchange="generateComparisonChart()"> Toruń</label>
+                <label><input type="checkbox" name="city" value="Radom" onchange="generateComparisonChart()"> Radom</label>
+                <label><input type="checkbox" name="city" value="Lublin" onchange="generateComparisonChart()"> Lublin</label>
+                <label><input type="checkbox" name="city" value="Szczecin" onchange="generateComparisonChart()"> Szczecin</label>
+                <label><input type="checkbox" name="city" value="Katowice" onchange="generateComparisonChart()"> Katowice</label>
+                <label><input type="checkbox" name="city" value="Białystok" onchange="generateComparisonChart()"> Białystok</label>
+                <label><input type="checkbox" name="city" value="Rzeszów" onchange="generateComparisonChart()"> Rzeszów</label>
+            </div>
+            
+        </div>
+
+        <!-- Obszar Wykresu -->
+        <div class="chart-area">
+            <h3 id="chart-title">Wykres Porównawczy Miast (Liczba Mieszkańców)</h3>
+            <canvas id="comparisonChart" style="max-height: 500px;"></canvas>
+            <div id="chart-message" style="text-align: center; margin-top: 20px; color: #888;">
+                Wybierz kryteria i miasta, aby wygenerować pierwszy wykres.
+            </div>
+
+            <!-- Nowy obszar Raportu Analitycznego -->
+            <div id="analysis-report-area" class="analysis-report">
+                <h4>Raport Analityczny Generowany przez AI</h4>
+                <p id="analysis-content">
+                    Raport zostanie wygenerowany automatycznie po wybraniu miast i kryteriów.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wymagane CDN-y -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    
+    <!-- LOGIKA JAVASCRIPT I CHART.JS -->
+    <script>
+        // *** Wymagane stałe środowiskowe dla Canvas (niezmieniane) ***
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        
+        // Ważne: W środowisku Canvas klucz API powinien być pusty (""), ponieważ jest wstrzykiwany dynamicznie.
+        // Jeśli uruchamiasz to poza Canvas, wstaw swój klucz API: const apiKey = "TWÓJ_KLUCZ_API";
+        const apiKey = "AIzaSyAEcnXWIY5ajmd59fml8iWiXUSz-IWbnhE"; 
+
+        // Dane symulacyjne dla porównywarki
+        const MOCK_DATA = {
+            'Płock': { population: 118, aqi: 45, income: 6500, unemployment: 5.2, green_area: 131, schools_per_capita: 4.8 },
+            'Warszawa': { population: 1800, aqi: 60, income: 9100, unemployment: 1.8, green_area: 85, schools_per_capita: 3.5 },
+            'Kraków': { population: 800, aqi: 75, income: 7800, unemployment: 2.5, green_area: 70, schools_per_capita: 4.0 },
+            'Łódź': { population: 670, aqi: 55, income: 6900, unemployment: 4.1, green_area: 95, schools_per_capita: 4.2 },
+            'Gdańsk': { population: 470, aqi: 40, income: 7500, unemployment: 3.3, green_area: 105, schools_per_capita: 3.8 },
+            'Wrocław': { population: 680, aqi: 65, income: 8100, unemployment: 2.2, green_area: 80, schools_per_capita: 3.9 },
+            'Poznań': { population: 550, aqi: 50, income: 7200, unemployment: 2.8, green_area: 90, schools_per_capita: 4.1 },
+            'Bydgoszcz': { population: 350, aqi: 48, income: 6200, unemployment: 4.5, green_area: 110, schools_per_capita: 4.7 },
+            'Toruń': { population: 200, aqi: 42, income: 6300, unemployment: 3.9, green_area: 120, schools_per_capita: 5.0 },
+            'Radom': { population: 210, aqi: 58, income: 5500, unemployment: 8.5, green_area: 100, schools_per_capita: 4.3 },
+            'Lublin': { population: 340, aqi: 52, income: 6400, unemployment: 5.0, green_area: 115, schools_per_capita: 4.5 },
+            'Szczecin': { population: 400, aqi: 44, income: 6700, unemployment: 3.5, green_area: 125, schools_per_capita: 4.6 },
+            'Katowice': { population: 300, aqi: 70, income: 7000, unemployment: 3.0, green_area: 65, schools_per_capita: 3.7 },
+            'Białystok': { population: 290, aqi: 40, income: 5900, unemployment: 5.8, green_area: 140, schools_per_capita: 5.1 },
+            'Rzeszów': { population: 190, aqi: 45, income: 6100, unemployment: 4.0, green_area: 100, schools_per_capita: 4.9 },
+        };
+        
+        let comparisonChartInstance = null;
+        
+        // Mapowanie wartości opcji do pełnych nazw wskaźników (dla wykresu Bar)
+        const INDICATOR_LABELS = {
+            'population': 'Liczba Mieszkańców (tys.)',
+            'aqi': 'Jakość Powietrza (Średnie AQI)',
+            'income': 'Średnie Wynagrodzenie (PLN)',
+            'unemployment': 'Stopa Bezrobocia (%)',
+            'green_area': 'Tereny Zielone (m²/osobę)',
+            'schools_per_capita': 'Placówki Edukacyjne (na 10 tys. mieszk.)'
+        };
+
+        // Jednostki dla raportu i tooltipów
+        const INDICATOR_UNITS = {
+            'population': 'tys.',
+            'aqi': 'AQI',
+            'income': 'PLN',
+            'unemployment': '%',
+            'green_area': 'm²/osobę',
+            'schools_per_capita': 'na 10 tys. mieszk.'
+        };
+
+        // Funkcja generująca losowy kolor
+        function generateRandomColor(opacity = 0.5) {
+            const r = Math.floor(Math.random() * 255);
+            const g = Math.floor(Math.random() * 255);
+            const b = Math.floor(Math.random() * 255);
+            return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+        }
+        
+        // Wskaźniki, gdzie WYŻSZA wartość jest LEPSZA
+        const HIGHER_IS_BETTER = ['population', 'income', 'green_area', 'schools_per_capita'];
+        // Wskaźniki, gdzie NIŻSZA wartość jest LEPSZA
+        const LOWER_IS_BETTER = ['aqi', 'unemployment'];
+
+
+        /**
+         * Normalizuje dane do skali 0-100 na podstawie ekstremalnych wartości 
+         * w aktualnie przefiltrowanym zbiorze miast.
+         */
+        function normalizeValue(indicator, value, allValues) {
+            const maxVal = Math.max(...allValues);
+            const minVal = Math.min(...allValues);
+            const range = maxVal - minVal;
+
+            if (range === 0) return 50; // Wszystkie są równe
+
+            if (HIGHER_IS_BETTER.includes(indicator)) {
+                return ((value - minVal) / range) * 100;
+            } else if (LOWER_IS_BETTER.includes(indicator)) {
+                // Dla AQI/Bezrobocia (niższa wartość = lepsza)
+                return 100 - (((value - minVal) / range) * 100);
+            }
+            return value; // Jeśli nieznany, zwróć surową wartość
+        }
+
+        // Funkcja ukrywająca/pokazująca panel wskaźników
+        function updateIndicatorPanel() {
+            const chartType = document.getElementById('chart-type-select').value;
+            const single = document.getElementById('single-indicator-options');
+            const multi = document.getElementById('multi-indicator-options');
+
+            if (chartType === 'radar') {
+                single.style.display = 'none';
+                multi.style.display = 'block';
+            } else {
+                single.style.display = 'block';
+                multi.style.display = 'none';
+            }
+        }
+
+        /**
+         * Funkcja pomocnicza do wykonania fetch z retry i backoffem.
+         */
+        async function exponentialBackoffFetch(url, options, maxRetries = 5) {
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(url, options);
+
+                    // Jeśli odpowiedź jest pomyślna (status 200-299), zwracamy ją natychmiast
+                    if (response.ok) {
+                        return response;
+                    }
+                    
+                    // Jeśli jest to błąd klienta (4xx, ale nie 429), przerywamy i rzucamy błąd, ponieważ retry nie pomoże
+                    if (response.status >= 400 && response.status < 500 && response.status !== 429) {
+                        const errorText = await response.text();
+                        console.error(`Gemini API Client Error ${response.status}:`, errorText);
+                        // Rzuć błąd z konkretnym kodem statusu, aby łatwiej było go obsłużyć w bloku catch
+                        throw new Error(`API Error ${response.status}. Details: ${errorText.substring(0, 100)}...`);
+                    }
+                    
+                    // Jeśli to 429 (Too Many Requests) lub 5xx (Server Error), przechodzimy do ponowienia
+
+                } catch (error) {
+                    // Błąd sieciowy lub błąd rzucony powyżej (API Error 403, 400 itd.)
+                    console.error("Fetch attempt failed:", error);
+                    // Jeśli to błąd, który powinien zakończyć pętlę (jak 4xx), przekaż go dalej
+                    if (error.message.startsWith('API Error')) {
+                        throw error;
+                    }
+                }
+
+                if (i < maxRetries - 1) {
+                    // Czekanie przed kolejną próbą (Exponential Backoff)
+                    const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+            }
+            // Jeśli wszystkie próby się nie powiodły, rzuć błąd
+            throw new Error("API call failed after max retries or permanent error encountered.");
+        }
+
+
+        /**
+         * Generuje raport analityczny za pomocą modelu Gemini.
+         */
+        async function generateAnalysisReport(filteredCities, chartType) {
+            const analysisContent = document.getElementById('analysis-content');
+            
+            // Wyczyść i pokaż wskaźnik ładowania
+            analysisContent.innerHTML = `<p><span class="loading-spinner"></span> Generowanie raportu analitycznego przez AI...</p>`;
+
+            const citiesData = filteredCities.map(city => ({
+                name: city,
+                data: MOCK_DATA[city]
+            }));
+
+            // Ustawienie promptu systemowego
+            let systemPrompt = "Jesteś ekspertem ds. analizy danych miejskich i konsultantem ds. rozwoju miast. Twoim zadaniem jest stworzenie krótkiego, profesjonalnego raportu porównawczego (maksymalnie 4 akapity) na temat wybranych miast na podstawie dostarczonych danych. Analizuj mocne i słabe strony miast w kontekście wskaźników. Pisz w tonie formalnym i analitycznym, używając języka polskiego. Unikaj zbędnego formatowania (tylko tekst, akapity oddzielone znakiem nowej linii).";
+            let userQuery = "";
+
+            if (chartType === 'bar') {
+                // Generowanie promptu dla wykresu słupkowego (pojedynczy wskaźnik)
+                const indicator = document.getElementById('indicator-select').value;
+                const indicatorLabel = INDICATOR_LABELS[indicator];
+                const unit = INDICATOR_UNITS[indicator];
+                
+                // Upewnij się, że sortowanie używa poprawnej logiki
+                const sortedData = [...citiesData].sort((a, b) => b.data[indicator] - a.data[indicator]);
+                const bestCity = sortedData[0];
+                const worstCity = sortedData[sortedData.length - 1];
+
+                const formattedData = citiesData.map(c => `${c.name}: ${c.data[indicator].toLocaleString()} ${unit}`).join('; ');
+
+                userQuery = `Wygeneruj raport. Porównaj miasta: ${filteredCities.join(', ')} pod kątem wskaźnika: ${indicatorLabel} (jednostka: ${unit}). Dane surowe: ${formattedData}. Najlepszy wynik osiągnęło ${bestCity.name} z wynikiem ${bestCity.data[indicator].toLocaleString()} ${unit}. Przeanalizuj te dane i wyciągnij wnioski.`;
+
+            } else if (chartType === 'radar') {
+                // Generowanie promptu dla wykresu radarowego (wiele wskaźników)
+                const selectedIndicators = Array.from(document.querySelectorAll('input[name="multi_indicator"]:checked'))
+                    .map(cb => cb.value);
+
+                if (selectedIndicators.length < 3) {
+                    analysisContent.innerHTML = '<p>Wybierz co najmniej 3 wskaźniki, aby wygenerować raport profilu miasta.</p>';
+                    return;
+                }
+
+                const radarLabels = selectedIndicators.map(key => INDICATOR_LABELS[key].split('(')[0].trim());
+                
+                // Generowanie danych surowych i znormalizowanych do raportu
+                let reportDetails = "Surowe i znormalizowane dane dla miast (0-100, gdzie 100 to najlepszy wynik): \n";
+                const allIndicatorValues = {};
+                selectedIndicators.forEach(key => {
+                    allIndicatorValues[key] = filteredCities.map(city => MOCK_DATA[city][key]);
+                });
+
+                citiesData.forEach(cityObj => {
+                    reportDetails += `${cityObj.name}: `;
+                    selectedIndicators.forEach(key => {
+                        const rawValue = MOCK_DATA[cityObj.name][key];
+                        const normalizedValue = normalizeValue(key, rawValue, allIndicatorValues[key]);
+                        const label = INDICATOR_LABELS[key].split('(')[0].trim();
+                        reportDetails += `${label} (Surowa: ${rawValue.toLocaleString()}, Znormalizowana: ${normalizedValue.toFixed(1)}/100); `;
+                    });
+                    reportDetails += '\n';
+                });
+
+                userQuery = `Wygeneruj raport. Porównaj profile miast: ${filteredCities.join(', ')} na podstawie znormalizowanych wskaźników: ${radarLabels.join(', ')}. Dane do analizy: ${reportDetails} Które miasto ma najbardziej zrównoważony profil, a które dominuje w konkretnych kategoriach?`;
+            }
+
+            // Używamy tego konkretnego modelu dla generacji treści
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                // Używamy Google Search Grounding dla bardziej aktualnych i ugruntowanych analiz
+                tools: [{ "google_search": {} }], 
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+            };
+
+            try {
+                const response = await exponentialBackoffFetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (text) {
+                    // Zamień podwójne i pojedyncze znaki nowej linii na akapity HTML
+                    analysisContent.innerHTML = '<p>' + text.replace(/\n\s*\n/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
+                } else {
+                    // Komunikat o błędzie dla braku treści
+                    console.error("Gemini API returned an empty response or unexpected structure:", result);
+                    analysisContent.innerHTML = '<p class="error-message">Nie udało się wygenerować raportu. Model AI nie zwrócił treści. Sprawdź konsolę, aby uzyskać szczegóły odpowiedzi API.</p>';
+                }
+
+            } catch (error) {
+                // *** OBSŁUGA BŁĘDÓW KRYTYCZNYCH ***
+                console.error("Krytyczny błąd generowania raportu AI:", error);
+
+                let displayMessage = `Wystąpił krytyczny błąd: ${error.message}. Sprawdź konsolę (F12), aby zobaczyć pełny log błędu.`;
+
+                // Specyficzna obsługa błędu 403 (Forbidden) - brak klucza lub niewystarczające uprawnienia
+                if (error.message.includes('API Error 403')) {
+                    displayMessage = `
+                        <div class="error-message">
+                            <h4>BŁĄD UWIERZYTELNIENIA (403 Forbidden)</h4>
+                            <p>Nie udało się wygenerować raportu. Ten błąd wskazuje, że aplikacja nie przekazała prawidłowego klucza API do modelu Gemini.</p>
+                            <p><strong>Diagnoza:</strong> Jeśli używasz tego w Canvas, upewnij się, że usługa Gemini jest włączona dla Twojego projektu. Jeśli uruchamiasz to lokalnie, musisz wstawić swój klucz API w linii <code>const apiKey = "";</code> w kodzie JavaScript.</p>
+                        </div>
+                    `;
+                } else if (error.message.includes('API Error 400')) {
+                    displayMessage = `
+                        <div class="error-message">
+                            <h4>BŁĄD ŻĄDANIA (400 Bad Request)</h4>
+                            <p>Żądanie do modelu AI jest źle sformułowane lub narusza zasady bezpieczeństwa.</p>
+                            <p><strong>Diagnoza:</strong> Spróbuj zmienić parametry porównania i spróbuj ponownie.</p>
+                        </div>
+                    `;
+                } else if (error.message.includes('API call failed after max retries')) {
+                     displayMessage = `
+                        <div class="error-message">
+                            <h4>BŁĄD SERWERA/TIMEOUT</h4>
+                            <p>Serwer API nie odpowiedział na czas lub wystąpił błąd po stronie Google.</p>
+                            <p><strong>Diagnoza:</strong> Proszę spróbować ponownie za chwilę.</p>
+                        </div>
+                    `;
+                }
+
+                analysisContent.innerHTML = displayMessage;
+            }
+        }
+
+        /**
+         * Główna funkcja generująca wykres i wywołująca raport AI.
+         */
+        function generateComparisonChart() {
+            const chartType = document.getElementById('chart-type-select').value;
+            const selectedCities = Array.from(document.querySelectorAll('input[name="city"]:checked'))
+                                       .map(cb => cb.value);
+            const minPop = parseFloat(document.getElementById('min-pop-input').value) || 0;
+            const chartMessage = document.getElementById('chart-message');
+
+            const filteredCities = selectedCities.filter(city => (MOCK_DATA[city].population * 1000) >= (minPop * 1000));
+            
+            if (comparisonChartInstance) {
+                comparisonChartInstance.destroy();
+            }
+
+            if (filteredCities.length === 0) {
+                chartMessage.innerText = 'Nie wybrano żadnych miast lub wszystkie miasta zostały wykluczone przez filtr populacji.';
+                document.getElementById('chart-title').innerText = 'Wykres Porównawczy Miast';
+                document.getElementById('analysis-content').innerHTML = 'Raport zostanie wygenerowany automatycznie po wybraniu miast i kryteriów.';
+                return;
+            }
+            
+            chartMessage.innerText = ''; // Wyczyść komunikat, jeśli dane są dostępne
+            
+            const ctx = document.getElementById('comparisonChart').getContext('2d');
+
+            if (chartType === 'bar') {
+                const indicator = document.getElementById('indicator-select').value;
+                const indicatorLabel = INDICATOR_LABELS[indicator];
+                const unit = INDICATOR_UNITS[indicator];
+                
+                document.getElementById('chart-title').innerText = `Wykres Porównawczy Miast (${indicatorLabel})`;
+
+                const dataValues = filteredCities.map(city => MOCK_DATA[city][indicator]);
+                
+                const backgroundColors = dataValues.map((_, index) => {
+                    // Daj Płockowi stały kolor, reszcie losowy
+                    return filteredCities[index] === 'Płock' ? 'rgba(26, 115, 232, 0.7)' : generateRandomColor(0.7);
+                });
+                const borderColors = backgroundColors.map(color => color.replace('0.7', '1'));
+
+                comparisonChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: filteredCities,
+                        datasets: [{
+                            label: indicatorLabel,
+                            data: dataValues,
+                            backgroundColor: backgroundColors,
+                            borderColor: borderColors,
+                            borderWidth: 1,
+                            borderRadius: 6,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: 'y', // Wykres poziomy dla czytelności
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: indicatorLabel
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.x !== null) {
+                                            label += context.parsed.x.toLocaleString() + ' ' + unit;
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+            } else if (chartType === 'radar') {
+                // Konfiguracja wykresu radarowego (dla wielu wskaźników)
+                const selectedIndicators = Array.from(document.querySelectorAll('input[name="multi_indicator"]:checked'))
+                                                .map(cb => cb.value);
+
+                if (selectedIndicators.length < 3) {
+                    chartMessage.innerText = 'Wykres radarowy wymaga wyboru co najmniej 3 wskaźników.';
+                    document.getElementById('analysis-content').innerHTML = 'Raport zostanie wygenerowany automatycznie po wybraniu miast i kryteriów.';
+                    return;
+                }
+                
+                document.getElementById('chart-title').innerText = 'Porównanie Profili Miast (Wskaźniki Znormalizowane)';
+
+                const labels = selectedIndicators.map(key => INDICATOR_LABELS[key]);
+                const datasets = [];
+
+                // Przygotowanie danych do normalizacji
+                const allIndicatorValues = {};
+                selectedIndicators.forEach(key => {
+                    allIndicatorValues[key] = filteredCities.map(city => MOCK_DATA[city][key]);
+                });
+
+                // Tworzenie datasetów (jeden dataset = jedno miasto)
+                filteredCities.forEach((city, index) => {
+                    const data = selectedIndicators.map(key => {
+                        const rawValue = MOCK_DATA[city][key];
+                        return normalizeValue(key, rawValue, allIndicatorValues[key]);
+                    });
+
+                    const baseColor = filteredCities[index] === 'Płock' ? 'rgba(26, 115, 232, 1)' : generateRandomColor(1.0);
+                    
+                    datasets.push({
+                        label: city,
+                        data: data,
+                        backgroundColor: baseColor.replace('1)', '0.3)'),
+                        borderColor: baseColor,
+                        pointBackgroundColor: baseColor,
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: baseColor,
+                        borderWidth: 2,
+                    });
+                });
+
+                comparisonChartInstance = new Chart(ctx, {
+                    type: 'radar',
+                    data: {
+                        labels: labels,
+                        datasets: datasets
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        elements: {
+                            line: {
+                                borderWidth: 3
+                            }
+                        },
+                        scales: {
+                            r: {
+                                angleLines: {
+                                    display: true
+                                },
+                                suggestedMin: 0,
+                                suggestedMax: 100,
+                                ticks: {
+                                    stepSize: 25,
+                                    font: { size: 10 }
+                                },
+                                pointLabels: {
+                                    font: { size: 12 }
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const indicatorKey = selectedIndicators[context.dataIndex];
+                                        const rawValue = MOCK_DATA[context.dataset.label][indicatorKey];
+                                        const unit = INDICATOR_UNITS[indicatorKey];
+                                        const label = context.dataset.label || '';
+                                        
+                                        const normalizedValue = context.parsed.r.toFixed(1);
+                                        
+                                        return `${label}: ${normalizedValue}/100 (Surowe: ${rawValue.toLocaleString()} ${unit})`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Po wygenerowaniu wykresu, generujemy raport AI
+            generateAnalysisReport(filteredCities, chartType);
+        }
+
+        // Inicjalizacja przy ładowaniu strony
+        window.onload = function() {
+            // Ustaw początkową widoczność panelu
+            updateIndicatorPanel(); 
+            // Generuj pierwszy wykres po załadowaniu
+            generateComparisonChart();
+        };
+
+    </script>
+{% endblock %}

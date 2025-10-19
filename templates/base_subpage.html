@@ -3,53 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>eStatysta Płock | Dane Statystyczne GUS</title>
+    <title>{% block title %}eStatysta Płock | GUS{% endblock %}</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"> 
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     
     <meta name="description" content="Dashboard wizualizujący dane statystyczne GUS dla Płocka i regionu.">
-    
-    <style>
-        /* Nadpisanie zmiennych, jeśli jest potrzebne */
-        :root {
-            --background-color: #f7f9fc; /* Light Gray Background */
-            --text-color: #3c4043; /* Dark Gray Text */
-            --light-bg: #ffffff;
-        }
-
-        /* Tytuł wyszukiwania na środku */
-        .search-title {
-            text-align: center;
-        }
-
-        /* Stylizacja formularza wyszukiwania (zgodna z style.css) */
-        .main-search-form {
-            display: flex;
-            justify-content: center;
-            max-width: 600px;
-            margin: 0 auto 50px auto; 
-            border-radius: var(--border-radius-base);
-            box-shadow: var(--shadow-prominent); 
-            overflow: hidden;
-        }
-    </style>
 </head>
 <body>
 
+    <input type="checkbox" id="nav-toggle" class="sr-only">
+    
+    <label for="nav-toggle" class="hamburger-menu-toggle">
+        <span></span>
+        <span></span>
+        <span></span>
+    </label>
+    
+    <label for="nav-toggle" class="nav-overlay"></label>
+    
     <header class="header" role="banner">
         <div class="logo">
             <a href="{{ url_for('index') }}">eStatysta Płock</a>
         </div>
-        
-        <div class="header-controls">
-            </div>
     </header>
 
     <nav class="icon-nav" role="navigation" aria-label="Główne menu nawigacyjne">
         <ul>
-            <li class="nav-item {% if page_id == 'index' %}active{% endif %}" data-name="Strona Główna"> 
+            <li class="nav-item {% if page_id == 'index' %}active{% endif %}" data-name="Strona Główna">
                 <a href="{{ url_for('index') }}" title="Strona Główna">
                     <i class="fas fa-home"></i>
                     <span class="nav-name">Strona Główna</span>
@@ -96,46 +77,23 @@
             </li>
         </ul>
     </nav>
+    
     <div class="main-layout">
+        
         <main class="content" role="main">
-            
-            <section id="search-section" aria-labelledby="search-heading">
-                <h2 id="search-heading" class="search-title">Czego chcesz się dowiedzieć o swoim mieście?</h2>
-                
-                <form role="search" action="#" method="GET" class="main-search-form">
-                    <label for="search-input" class="sr-only">Wyszukaj dane statystyczne</label>
-                    <input type="search" id="search-input" 
-                            placeholder="Wpisz np.: bezrobocie, edukacja, budżet..." name="q">
-                    <button type="submit" title="Wyszukaj"><i class="fas fa-search"></i></button>
-                </form>
-            </section>
-            
-            <section id="chart-area" aria-label="Główny obszar wykresów">
-                <h3 class="section-title">Ostatnie i Najpopularniejsze Dane:</h3>
-                
-                {% if initial_data %}
-                    <div class="data-preview full-width">
-                        <h3>Ludność Płocka (Przykładowe dane):</h3>
-                        <div class="data-section-grid">
-                            <div class="data-preview">Labels: {{ initial_data.labels | join(', ') }}</div>
-                            <div class="data-preview">Values: {{ initial_data.values | join(', ') }}</div>
-                        </div>
-                    </div>
-                {% else %}
-                    <p class="description-text" style="max-width: 100%;">Wybierz kategorię z menu lub użyj wyszukiwarki.</p>
-                {% endif %}
-            </section>
-
+            {% block content_block %}
+            {% endblock %}
         </main>
     </div>
 
-    <footer class="footer" role="contentinfo">
-        &copy; 2025 eStatysta Płock | Dane miejskie z wykorzystaniem generatywnej AI. | Dane statystyczne pochodzą z Banku Danych Lokalnych GUS.
+    <footer role="contentinfo">
+        &copy; 2025 eStatysta Płock. Dane statystyczne pochodzą z Banku Danych Lokalnych GUS.
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        console.log("Strona główna załadowana. Menu nawigacyjne jest aktywne.");
-        // Opcjonalnie: dodaj logikę JS do aktywowania elementu 'Strona Główna' w menu, jeśli nie jest to robione przez Jinja.
+        console.log("Strona załadowana. Gotowa do renderowania wykresów.");
+        // Tutaj można dodać wspólną logikę JS dla ładowania danych
     </script>
 </body>
 </html>
