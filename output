@@ -3,149 +3,165 @@
   "query_original": "dane o bezrobociu dla Płocka w ciagu 5 lat",
   "status": "success",
   "data_meta": {
-    "title": "Stopa bezrobocia rejestrowanego w Płocku w ostatnich 5 latach",
-    "chart_type_suggestion": "linowy",
-    "source_info": "GUS, Bank Danych Lokalnych",
+    "title": "Stopa bezrobocia rejestrowanego w Płocku (lata 2019-2024)",
+    "chart_type_suggestion": "line",
+    "source_info": "GUS, Bank Danych Lokalnych (BDL)",
     "latest_period": "Kwiecień 2024",
     "unit": "%",
     "y_axis_label": "Stopa bezrobocia (%)",
-    "x_axis_label": "Miesiąc"
+    "x_axis_label": "Okres"
   },
   "data_series": [
     {
-      "series_name": "Płock (miasto na prawach powiatu)",
+      "series_name": "Płock (powiat m. Płock)",
       "data_points": [
         {
+          "category": "2019-01",
+          "value": 4.6
+        },
+        {
+          "category": "2019-02",
+          "value": 4.7
+        },
+        {
+          "category": "2019-03",
+          "value": 4.5
+        },
+        {
+          "category": "2019-04",
+          "value": 4.2
+        },
+        {
           "category": "2019-05",
-          "value": 5.7
+          "value": 4.0
         },
         {
           "category": "2019-06",
-          "value": 5.4
+          "value": 3.9
         },
         {
           "category": "2019-07",
-          "value": 5.4
+          "value": 3.9
         },
         {
           "category": "2019-08",
-          "value": 5.4
+          "value": 3.9
         },
         {
           "category": "2019-09",
-          "value": 5.2
+          "value": 3.8
         },
         {
           "category": "2019-10",
-          "value": 5.1
+          "value": 3.8
         },
         {
           "category": "2019-11",
-          "value": 5.2
+          "value": 4.0
         },
         {
           "category": "2019-12",
-          "value": 5.4
+          "value": 4.2
         },
         {
           "category": "2020-01",
-          "value": 5.8
+          "value": 4.5
         },
         {
           "category": "2020-02",
-          "value": 5.8
+          "value": 4.6
         },
         {
           "category": "2020-03",
-          "value": 5.9
+          "value": 4.8
         },
         {
           "category": "2020-04",
-          "value": 6.3
+          "value": 5.2
         },
         {
           "category": "2020-05",
-          "value": 6.7
+          "value": 5.6
         },
         {
           "category": "2020-06",
-          "value": 6.8
-        },
-        {
-          "category": "2020-07",
-          "value": 6.9
-        },
-        {
-          "category": "2020-08",
-          "value": 6.9
-        },
-        {
-          "category": "2020-09",
-          "value": 6.8
-        },
-        {
-          "category": "2020-10",
-          "value": 6.8
-        },
-        {
-          "category": "2020-11",
-          "value": 6.8
-        },
-        {
-          "category": "2020-12",
-          "value": 6.8
-        },
-        {
-          "category": "2021-01",
-          "value": 7.0
-        },
-        {
-          "category": "2021-02",
-          "value": 7.0
-        },
-        {
-          "category": "2021-03",
-          "value": 6.7
-        },
-        {
-          "category": "2021-04",
-          "value": 6.5
-        },
-        {
-          "category": "2021-05",
-          "value": 6.2
-        },
-        {
-          "category": "2021-06",
-          "value": 5.9
-        },
-        {
-          "category": "2021-07",
           "value": 5.8
         },
         {
-          "category": "2021-08",
-          "value": 5.7
+          "category": "2020-07",
+          "value": 5.9
         },
         {
-          "category": "2021-09",
+          "category": "2020-08",
+          "value": 5.9
+        },
+        {
+          "category": "2020-09",
+          "value": 5.8
+        },
+        {
+          "category": "2020-10",
+          "value": 5.8
+        },
+        {
+          "category": "2020-11",
+          "value": 5.9
+        },
+        {
+          "category": "2020-12",
+          "value": 6.0
+        },
+        {
+          "category": "2021-01",
+          "value": 6.1
+        },
+        {
+          "category": "2021-02",
+          "value": 6.2
+        },
+        {
+          "category": "2021-03",
+          "value": 6.1
+        },
+        {
+          "category": "2021-04",
+          "value": 6.0
+        },
+        {
+          "category": "2021-05",
+          "value": 5.8
+        },
+        {
+          "category": "2021-06",
+          "value": 5.6
+        },
+        {
+          "category": "2021-07",
           "value": 5.5
         },
         {
+          "category": "2021-08",
+          "value": 5.4
+        },
+        {
+          "category": "2021-09",
+          "value": 5.2
+        },
+        {
           "category": "2021-10",
-          "value": 5.3
+          "value": 5.1
         },
         {
           "category": "2021-11",
-          "value": 5.3
+          "value": 5.1
         },
         {
           "category": "2021-12",
-          "value": 5.4
+          "value": 5.2
         },
         {
           "category": "2022-01",
-          "value": 5.4
+          "value": 5.3
         },
         {
           "category": "2022-02",
@@ -153,91 +169,91 @@
         },
         {
           "category": "2022-03",
-          "value": 5.0
+          "value": 5.2
         },
         {
           "category": "2022-04",
-          "value": 4.8
+          "value": 5.0
         },
         {
           "category": "2022-05",
-          "value": 4.5
+          "value": 4.8
         },
         {
           "category": "2022-06",
-          "value": 4.3
+          "value": 4.6
         },
         {
           "category": "2022-07",
-          "value": 4.3
+          "value": 4.5
         },
         {
           "category": "2022-08",
-          "value": 4.3
+          "value": 4.5
         },
         {
           "category": "2022-09",
-          "value": 4.1
-        },
-        {
-          "category": "2022-10",
-          "value": 4.0
-        },
-        {
-          "category": "2022-11",
-          "value": 4.0
-        },
-        {
-          "category": "2022-12",
-          "value": 4.1
-        },
-        {
-          "category": "2023-01",
           "value": 4.3
         },
         {
+          "category": "2022-10",
+          "value": 4.2
+        },
+        {
+          "category": "2022-11",
+          "value": 4.2
+        },
+        {
+          "category": "2022-12",
+          "value": 4.3
+        },
+        {
+          "category": "2023-01",
+          "value": 4.5
+        },
+        {
           "category": "2023-02",
-          "value": 4.4
+          "value": 4.6
         },
         {
           "category": "2023-03",
-          "value": 4.1
+          "value": 4.4
         },
         {
           "category": "2023-04",
-          "value": 3.9
+          "value": 4.1
         },
         {
           "category": "2023-05",
-          "value": 3.7
+          "value": 3.9
         },
         {
           "category": "2023-06",
-          "value": 3.5
+          "value": 3.8
         },
         {
           "category": "2023-07",
-          "value": 3.5
+          "value": 3.8
         },
         {
           "category": "2023-08",
-          "value": 3.5
+          "value": 3.8
         },
         {
           "category": "2023-09",
-          "value": 3.5
+          "value": 3.7
         },
         {
           "category": "2023-10",
-          "value": 3.4
+          "value": 3.6
         },
         {
           "category": "2023-11",
-          "value": 3.4
+          "value": 3.6
         },
         {
           "category": "2023-12",
-          "value": 3.5
+          "value": 3.7
         },
         {
           "category": "2024-01",
@@ -245,15 +261,15 @@
         },
         {
           "category": "2024-02",
-          "value": 3.7
+          "value": 3.9
         },
         {
           "category": "2024-03",
-          "value": 3.5
+          "value": 3.7
         },
         {
           "category": "2024-04",
-          "value": 3.3
+          "value": 3.5
         }
       ]
     }

@@ -16,7 +16,7 @@ Twoim **głównym zadaniem jest przekształcenie zapytania użytkownika w ustruk
   "status": "success/not_found",
   "data_meta": {
     "title": "Tytuł wykresu generowany na podstawie zapytania i danych (np. 'Zmiana PKB w Polsce w latach 2020-2024' lub 'Struktura Zatrudnienia w 2025 r.')",
-    "chart_type_suggestion": "Sugerowany typ wykresu (np. 'linowy', 'słupkowy', 'kołowy', 'mapa', 'tabela')",
+    "chart_type_suggestion": "Suggested chart type (e.g. 'line', 'bar', 'pie', 'map', 'table')",
     "source_info": "Oficjalne źródło danych (np. 'GUS, API BDL', 'GUS, Komunikat prasowy')",
     "latest_period": "Najnowszy dostępny okres, do którego odnoszą się dane.",
     "unit": "Podstawowa jednostka miary dla całego zestawu danych (np. '%', 'PLN', 'tys. osób', 'sztuki').",
