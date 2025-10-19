@@ -78,10 +78,30 @@
 
         <main class="main-content" id="main-content">
 
-            <button class="theme-toggle-main" id="theme-toggle-btn" title="Zmień motyw">
-                <i class="theme-icon icon-sun" data-lucide="sun"></i>
-                <i class="theme-icon icon-moon" data-lucide="moon"></i>
-            </button>
+            <div class="main-header-actions">
+                <!-- Przycisk zmiany motywu (teraz pierwszy) -->
+                <button class="theme-toggle-main" id="theme-toggle-btn" title="Zmień motyw">
+                    <i class="theme-icon icon-sun" data-lucide="sun"></i>
+                    <i class="theme-icon icon-moon" data-lucide="moon"></i>
+                </button>
+
+                <!-- Przycisk i menu pobierania (teraz drugi) -->
+                <div class="download-container">
+                    <button class="download-btn" id="download-btn" title="Pobierz raport">
+                        <i data-lucide="download"></i>
+                    </button>
+                    <div class="download-menu" id="download-menu">
+                        <a href="#" class="download-option" data-format="excel">
+                            <i data-lucide="file-spreadsheet"></i>
+                            <span>Excel</span>
+                        </a>
+                        <a href="#" class="download-option" data-format="pdf">
+                            <i data-lucide="file-text"></i>
+                            <span>PDF</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
             
             <div class="chat-container">
                 

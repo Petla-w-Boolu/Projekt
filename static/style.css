@@ -328,9 +328,7 @@ background-color: var(--bg-primary);
 
 /* Style dla przycisku motywu w rogu */
 .theme-toggle-main {
-position: absolute;
-top: 20px;
-right: 24px;
+/* Usunięte pozycjonowanie absolutne, aby przycisk trzymał się kontenera flex */
 z-index: 50;
 
 display: flex;
@@ -972,4 +970,63 @@ html.dark-mode .report-table tr:hover {
     white-space: pre-wrap; /* Kluczowe: zawija tekst i szanuje nowe linie */
     word-wrap: break-word;
     overflow-x: hidden;
+}
+
+/* --- Style dla przycisków akcji w nagłówku --- */
+.main-header-actions {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    z-index: 100;
+}
+
+/* Kontener dla przycisku pobierania i jego menu */
+.download-container {
+    position: relative;
+}
+
+/* Menu pobierania - domyślnie ukryte */
+.download-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: var(--shadow-minimal);
+    padding: 0.5rem;
+    margin-top: 0.5rem;
+    width: 150px;
+    z-index: 101;
+}
+
+/* Pokazywanie menu po dodaniu klasy 'active' */
+.download-menu.active {
+    display: block;
+}
+
+/* Opcje w menu */
+.download-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 6px;
+    color: var(--text-primary);
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.download-option:hover {
+    background-color: var(--bg-tertiary);
+    text-decoration: none;
+}
+
+.download-option i {
+    width: 18px;
+    height: 18px;
 }

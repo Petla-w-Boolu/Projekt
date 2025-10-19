@@ -4,6 +4,31 @@ document.addEventListener('DOMContentLoaded', () => {
     // Inicjalizacja ikon Lucide
     lucide.createIcons();
 
+    // --- NOWA LOGIKA: OBSŁUGA MENU POBIERANIA ---
+    const downloadBtn = document.getElementById('download-btn');
+    const downloadMenu = document.getElementById('download-menu');
+
+    if (downloadBtn && downloadMenu) {
+        downloadBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Zapobiega natychmiastowemu zamknięciu menu przez listener na 'window'
+            downloadMenu.classList.toggle('active');
+        });
+
+        // Zamykanie menu po kliknięciu gdziekolwiek indziej
+        window.addEventListener('click', () => {
+            if (downloadMenu.classList.contains('active')) {
+                downloadMenu.classList.remove('active');
+            }
+        });
+
+        // Zapobieganie zamykaniu menu po kliknięciu w jego wnętrzu
+        downloadMenu.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+    }
+    // --- KONIEC NOWEJ LOGIKI ---
+
+
     // --- LOGIKA PRZEŁĄCZNIKA MOTYWU (THEME TOGGLER) ---
     const themeToggleBtn = document.getElementById('theme-toggle-btn');
     
