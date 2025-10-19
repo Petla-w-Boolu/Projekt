@@ -1,4 +1,3 @@
-
 /* --- Globalne Ustawienia i Zmienne Kolorów --- */
 :root {
 /* Paleta tła (Light Mode - domyślny) */
@@ -527,7 +526,7 @@ max-height: 200px;
 overflow-y: auto;
 padding-right: 0; 
   padding-left: 8px;
-  
+ 
   /* DODANE: Centruje tekst w pionie */
   padding-top: 8px;
   padding-bottom: 8px;
@@ -743,4 +742,234 @@ html.dark-mode .sidebar {
  width: 90%;
  padding: 24px;
 }
+}
+
+
+/* --- 
+--- NOWE STYLE DLA INTERAKTYWNEGO RAPORTU --- 
+--- Skopiuj ten blok na KONIEC swojego pliku style.css --- 
+--- */
+
+/* Główny kontener raportu w wiadomości AI */
+.interactive-report {
+    display: flex;
+    flex-direction: column;
+    gap: 24px; /* Odstępy między sekcjami (KPI, wykres, tabela) */
+}
+
+.interactive-report h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 8px;
+    margin: 0; /* Resetuje domyślne marginesy h2 */
+}
+
+.interactive-report h3 {
+    font-size: 1.15rem; /* Nieco większe niż w .message-content */
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-top: 8px; /* Dodaje trochę odstępu nad h3 */
+    margin-bottom: 12px; /* Odstęp pod h3, przed treścią */
+}
+
+/* Kontener na karty KPI */
+.kpi-container {
+    display: grid;
+    /* Automatycznie dopasowuje kolumny: min. 160px, maks. 1fr */
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+}
+
+/* Pojedyncza karta KPI */
+.kpi-card {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    box-shadow: var(--shadow-minimal);
+}
+
+.kpi-title {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.kpi-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.kpi-value i {
+    width: 18px;
+    height: 18px;
+}
+.kpi-date {
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: var(--text-secondary);
+    margin-left: 4px;
+}
+
+/* Kolory dla zmian KPI (używają zmiennych flash) */
+.kpi-value.diff-positive { color: var(--flash-success-text); }
+.kpi-value.diff-negative { color: var(--flash-danger-text); }
+.kpi-value.diff-neutral { color: var(--text-secondary); }
+
+/* Lepsze kolory w Dark Mode (zmienne flash są trochę za ciemne) */
+html.dark-mode .kpi-value.diff-positive { color: #4ade80; }
+html.dark-mode .kpi-value.diff-negative { color: #f87171; }
+html.dark-mode .kpi-value.diff-neutral { color: var(--text-secondary); }
+
+/* Kontener na wykres */
+.chart-container {
+    position: relative;
+    height: 350px; /* Stała wysokość dla wykresu */
+    width: 100%;
+    background-color: var(--bg-secondary);
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-minimal);
+}
+
+/* Podsumowanie statystyczne */
+.stats-summary {
+    list-style: none;
+    padding: 16px;
+    background-color: var(--bg-tertiary);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.stats-summary li {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    border-bottom: 1px dashed var(--border-color);
+}
+.stats-summary li:last-child {
+    border-bottom: none;
+}
+.stats-summary li strong {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* Kontener na tabelę (dla przewijania) */
+.table-container {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    /* Ukrywa brzydki pasek przewijania na Webkit */
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) var(--bg-secondary);
+}
+.table-container::-webkit-scrollbar {
+    width: 8px;
+}
+.table-container::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+    border-radius: 8px;
+}
+.table-container::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: 8px;
+}
+
+/* Tabela z danymi */
+.report-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.report-table th,
+.report-table td {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 0.9rem;
+    border-bottom: 1px solid var(--border-color); /* Zastępuje linię w tr */
+}
+
+.report-table th {
+    background-color: var(--bg-tertiary);
+    font-weight: 600;
+    position: sticky;
+    top: 0; /* Trzyma nagłówek na górze podczas przewijania */
+    z-index: 1;
+}
+
+/* Usuwa podwójną linię na dole */
+.report-table tr:last-child th,
+.report-table tr:last-child td {
+    border-bottom: none;
+}
+
+.report-table tr:hover {
+    background-color: var(--bg-tertiary);
+}
+/* Poprawka dla Dark Mode */
+html.dark-mode .report-table tr:hover {
+    background-color: var(--bg-tertiary);
+}
+
+/* Informacja o źródle danych */
+.source-info {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 12px;
+    text-align: right;
+}
+
+/* Styl dla bloku błędu raportu (używa zmiennych flash) */
+.report-error {
+    background-color: var(--flash-danger-bg);
+    border: 1px solid var(--flash-danger-border);
+    color: var(--flash-danger-text);
+    padding: 16px;
+    border-radius: 8px;
+}
+.report-error h4 {
+    margin-bottom: 8px;
+    color: inherit;
+    margin-top: 0; /* Resetuje domyślne marginesy */
+}
+.report-error p {
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* Specjalne style dla bloków Markdown wewnątrz raportu */
+.markdown-content {
+    /* Wszystkie style (ul, strong, etc.) są już zdefiniowane
+       w globalnych stylach .message-content */
+}
+/* Usuwamy domyślne tło z <pre>, gdy jest w .markdown-content.
+   To pozwala AI na wysyłanie tekstu z nowymi liniami (w <pre>)
+   który jest potem parsowany przez marked.js i wygląda jak zwykły tekst.
+*/
+.markdown-content pre {
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: inherit; /* Używa czcionki aplikacji, nie monospace */
+    font-size: inherit;
+    color: inherit;
+    white-space: pre-wrap; /* Kluczowe: zawija tekst i szanuje nowe linie */
+    word-wrap: break-word;
+    overflow-x: hidden;
 }
